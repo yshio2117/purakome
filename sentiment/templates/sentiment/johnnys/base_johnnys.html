@@ -1,0 +1,259 @@
+{% load static %}
+{% load boost %}
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og:http://ogp.me/ns#">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NGPST6PSGS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-NGPST6PSGS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
+{% block head %}{% endblock %}
+<title>{% block title %}{% endblock %}</title>
+<meta name="description" content="人気ジャニーズグループに対するツイッター上の意見や感想、リアクションを集計分析し、ポジティブ・ネガティブの理由、要望や改善点を簡潔にまとめて提示することを目指しています。">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css"/>
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
+<script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.js"></script>
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbarNavDropdown">
+  <div class="container-fluid">
+
+    <a class="nav-link title" role="button" href="{% url 'index' %}">
+      <img src="{% static 'image/siteicon_johnnys.webp' %}" height="90" width="280" alt="サイトアイコン">
+    </a>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-mdb-toggle="collapse"
+      data-mdb-target="#navbarLeftAlignExample"
+      aria-controls="navbarLeftAlignExample"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Collapsible wrapper -->
+    <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
+      <!-- Left links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            ジャニーズ
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'j_event' name='travisjapan' episode=1 %}">Travis Japan</a>
+              </li>          
+              <li>
+                <a class="dropdown-item" href="{% url 'j_event' name='naniwadanshi' episode=1 %}">なにわ男子</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#">Kinki Kids</a>
+              </li>
+
+
+              <li>
+                <a class="dropdown-item" href="#">King and Prince</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" >Hey!Say!JUMP</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" >KAT-TUN</a>
+              </li>
+          </ul>
+        </li>
+
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            ジャニーズJr.
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="#" >HiHi Jets</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" >美少年</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" >少年忍者</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#" >IMPACTors</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="#">Go! Go! kids</a>
+              </li>
+
+          </ul>
+        </li>
+
+
+      </ul>
+
+    </div>
+  </div>
+</nav>
+<!-------->
+
+</div>
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-white">
+  <div class="spinner-border text-info" role="status" id="loading">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <span class="text-info nowloading">&nbsp;loading.. ʕ˵·ᴥ·ʔ</span>
+</div>
+
+<div id="hide_contents"> <!-- spinner表示時に隠す -->
+
+{% block header %}{% endblock %}
+
+{% if messages %}
+  <div class="container">
+      <div class="row">
+          <div class="w-100">
+              <ul class="messages" style="list-style: none;">
+                  {% for message in messages %}
+                  <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                      {{ message }}
+                  </li>
+                  {% endfor %}
+              </ul>
+          </div>
+      </div>
+  </div>
+{% endif %}
+
+{% block contents %}{% endblock %}
+
+<!--上部へ戻るボタン-->
+<div id="page_top">
+  <a href="#"></a>
+</div>
+
+<!--Footer-->
+<footer class="py-5 bg-black">
+    <div class="container">
+        <p class="m-0 text-center text-white small">Copyright &copy; プラコ>メ 2022</p>
+        <hr>
+        <a href="{% url 'contact' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">お問い合わせ</p>
+        </a>
+
+        <hr>
+        <a href="{% url 'sitepolicy' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">プライバシーポリシー/免責事>項</p>
+        </a>
+        <hr>
+        <a href="{% url 'aboutus' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">About us</p>
+        </a>
+        <br>
+        <br>
+
+        <div style="margin-top:3rem; margin-bottom:3rem;">
+        <p class="m-0 text-white text-center">【サイトの注意事項】</p><br>
+        <p class="m-0 text-white text-left">*1)各ツイートに対するポジティブ>・ネガティブの感情判定、また[今週のポジティブな感想の要約]はアニメ有志の手作業により日々行われております。これらの判定は当サイト独自の基準によるものであり、投稿者の実際の感情や意図と異なる場合があります。</p>
+        <p class="m-0 text-white text-left">*2)各アニメページの[要約されたツイートの一覧]に併記されているツイートは一部のみ抜粋・表示されております。実>際に該当する投稿数は要約文下の(～ツイート)の数字をご確認ください。</p>
+        <p class="m-0 text-white text-left">*3)各アニメのイラストの描写にはwordcloudを用い、投稿文の文章構造を解析し、対象への形容表現が出現順に視覚的に大きくなるようにしています。</p>
+        <p class="m-0 text-white text-left">*4)[あなたにおすすめのアニメ]に>表示されるアニメは、アニメに対するポジティブな感想・リアクション、またストーリー等を含めた類似度を算出し他のアニメのものと比較し、同じポジティブなリアクションをする可能性が高い(例：Aが可愛いと思うのであれば類似するBも可愛いと思>う)アニメを表示しています。</p>
+        </div>
+
+
+
+    </div>
+</footer>
+<!-- hide_contents -->
+</div>
+
+<!----------JAVASCRIPT--------------->
+<script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-rc.2/lazyload.min.js"></script>
+{% block javascript %}{% endblock %}
+
+<script>
+//ボタン複数回クリック防止
+
+var loading = document.getElementById('loading');
+var contents = document.getElementById('hide_contents');
+
+//var menu = document.getElementById('navbarSupportedContent');
+
+// spinnerが表示されていたら非表示(キャッシュ読込時も動作)
+window.addEventListener("pageshow", () => {
+  if( loading.parentNode.classList.contains('vh-100') == true ){
+
+     loading.classList.add('d-none');
+     loading.parentNode.classList.replace('vh-100', 'd-none');
+     contents.classList.remove('d-none');
+     //menu.classList.remove('d-none');
+  }
+});
+
+
+window.addEventListener("beforeunload", () => {
+
+    //console.log("moving..");
+      //console.log(menu)
+      //let newevent = new Event('click');
+      //menu.dispatchEvent(newevent); // メニュー閉じる
+      //menu.classList.add("d-none");
+
+      loading.classList.remove('d-none');
+      loading.parentNode.classList.replace('d-none', 'vh-100');
+      contents.classList.add('d-none');
+
+});
+
+</script>
+
+<script>
+        /////// Prevent closing from click inside dropdown
+                document.querySelectorAll('.dropdown-menu').forEach(function(element){
+                        element.addEventListener('click', function (e) {
+                          e.stopPropagation();
+                        });
+                })
+        //// リサイズごとに画面リロード（しないとカルーセルの動作がおかしく>なる
+
+//      window.addEventListener("resize", function() {
+//              "use strict"; window.location.reload();
+//      });
+
+</script>
+
+<script>lazyload();</script>
+
+</body>
+</html>

@@ -1,0 +1,123 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load boost %}
+{% load filter %}
+
+{% block title %}ツイッター穴埋め推理クイズ|アニメキャラクター・声優・OP・ED編|ぷらこめ{% endblock %}
+{% block head %}<link rel="canonical" href="https://purakome.net/sentiment/anime/quiz/">{% endblock %}
+{% block header %}
+
+{% endblock %}
+
+{% block contents %}
+<div class="container" style="margin-bottom:5rem;">
+
+<div style="margin-top:3rem; margin-bottom:2rem; text-align:center;">
+<h1 style="font-weight:bold;font-size:3rem;">ツイッター穴埋め推理ゲームに挑戦！【アニメ編】</h1>
+<p style="font-weight:bold;font-size:2rem;">-もう雰囲気で何をつぶやいてるかわかっちゃう!-力テスト</p>
+ <div style="margin-top:3rem;">
+    <img class="lazyload" data-src="{% static 'image/quiz_girl.webp' %}" height=150px width=150px alt="クイズアイコン">
+  </div>
+</div>
+
+
+
+<div class="box75">
+  <div class="box-title">
+    <h2 style="font-weight:bold">【キャラクター編 初級レベル】</h2>
+  </div>
+    <p style="margin-top:3rem;font-size:1.4rem;">(全5問)<br>みんなのつぶやきから何のアニメキャラクターが話題になっているか当てよう!<br>
+    みんなが知ってる人気キャラクターが出題!</p>
+    <p style="font-size:1.3rem;">＊毎回出題は変わります</p>
+    <div style="margin-top:2rem;text-align:center;">
+      {% with next=number|add:"1" %}
+      <form action="{% url 'questions' 1 %}" method="post">
+        {% csrf_token %}  
+        <button type="submit" class="quiz_button" value="0,,chara_lv1" name="chara_lv1"><font style="font-size:1.4rem;">START</font></button>
+
+      </form>
+      {% endwith %}
+    </div>    
+</div>
+
+<div class="box75">
+  <div class="box-title">
+    <h2 style="font-weight:bold">【キャラクター編 上級レベル】</h2>
+  </div>
+    <p style="margin-top:3rem;font-size:1.4rem;">(全5問)<br>みんなのつぶやきから何のアニメキャラクターが話題になっているか当てよう!<br>
+    あまり知られてない?サブキャラクターも含めて出題。ヒントのつぶやきも少ないから文章をよく読むことが大事だよ!</p>
+    <p style="font-size:1.3rem;">＊毎回出題は変わります</p>
+    <div style="margin-top:2rem;text-align:center;">
+      {% with next=number|add:"1" %}
+      <form action="{% url 'questions' 1 %}" method="post">
+        {% csrf_token %}  
+        <button type="submit" class="quiz_button" value="0,,chara_lv2" name="chara_lv2"><font style="font-size:1.4rem;">START</font></button>
+
+      </form>
+      {% endwith %}
+    </div>    
+</div>
+
+<div class="box75">
+  <div class="box-title">
+    <h2 style="font-weight:bold">【アニメ声優編】</h2>
+  </div>
+    <p style="margin-top:3rem;font-size:1.4rem;">(全5問)<br>みんなのつぶやきからどの声優さんが話題になっているか当てよう!</p>
+    <p style="font-size:1.3rem;">＊毎回出題は変わります</p>
+    <div style="margin-top:2rem;text-align:center;">
+      {% with next=number|add:"1" %}
+      <form action="{% url 'questions' 1 %}" method="post">
+        {% csrf_token %}  
+        <button type="submit" class="quiz_button" value="0,,cv_lv1" name="cv_lv1"><font style="font-size:1.4rem;">START</font></button>
+
+      </form>
+      {% endwith %}
+    </div>    
+</div>
+
+<div class="box75">
+  <div class="box-title">
+    <h2 style="font-weight:bold">【アニメ編】</h2>
+  </div>
+    <p style="margin-top:3rem;font-size:1.4rem;">(全5問)<br>みんなのつぶやきから何のアニメが話題になっているか当てよう!<br>
+    みんなが知ってる人気アニメが出題!</p>
+    <p style="font-size:1.3rem;">＊毎回出題は変わります</p>
+    <div style="margin-top:2rem;text-align:center;">
+      {% with next=number|add:"1" %}
+      <form action="{% url 'questions' 1 %}" method="post">
+        {% csrf_token %}  
+        <button type="submit" class="quiz_button" value="0,,anime_lv1" name="anime_lv1"><font style="font-size:1.4rem;">START</font></button>
+
+      </form>
+      {% endwith %}
+    </div>    
+</div>
+
+<div class="box75">
+  <div class="box-title">
+    <h2 style="font-weight:bold">【アニメOP/ED曲編】</h2>
+  </div>
+    <p style="margin-top:3rem;font-size:1.4rem;">(全5問)<br>みんなのつぶやきからどのアニメOP・ED曲が話題になっているか当てよう!<br>
+    みんなが知ってる人気アニメから出題!</p>
+    <p style="font-size:1.3rem;">＊毎回出題は変わります</p>
+    <div style="margin-top:2rem;text-align:center;">
+      {% with next=number|add:"1" %}
+      <form action="{% url 'questions' 1 %}" method="post">
+        {% csrf_token %}  
+        <button type="submit" class="quiz_button" value="0,,oped_lv1" name="oped_lv1"><font style="font-size:1.4rem;">START</font></button>
+
+      </form>
+      {% endwith %}
+    </div>    
+</div>
+
+<div>
+  <p style="font-size:1.3rem;">*各問題は実際につぶやかれたツイートからアニメ名・キャラ名等をマスキングして出題。前後の文脈や日時をヒントに、何が話されているのかを推理しながら遊んでみてください。</p>
+</div>
+
+</div>
+{% endblock %}
+
+{% block javascript %}
+
+{% endblock %}

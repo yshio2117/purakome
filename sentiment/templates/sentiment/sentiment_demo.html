@@ -1,0 +1,662 @@
+{% load static %}
+{% load filter %}
+{% load social_share %}
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og:http://ogp.me/ns#">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NGPST6PSGS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-NGPST6PSGS');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
+
+    <title>ツイッター感情分析ツール | リアルタイムでTwitterのポジネガ検索 | ぷらこめ</title>
+    <link rel="canonical" href="https://purakome.net/sentiment/">
+    <meta name="description" content="web上で使えるリアルタイム感情分析ツール。気になるワードの評判・満足度を最新AIがまとめて調査。">
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://purakome.net/sentiment/" />
+    <meta property="og:site_name" content="感情分析ぷらこめ" />
+    <meta property="og:title" content="ツイッター感情分析ツール | ぷらこめ"/>
+    <meta property="og:description" content="web上で使えるリアルタイム感情分析ツール。気になるワードの評判・満足度を最新AIがまとめて調査。"/>
+    {% with filename="image/header_forblogger.webp" %}
+    <meta property="og:image" content="{% static filename %}"/>
+    {% endwith %}
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:site" content="@LeiLingVei"/>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.css" rel="stylesheet"/>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+    <script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.js"></script>
+
+</head>
+
+
+<body>
+
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-white">
+  <div class="spinner-border text-info" role="status" id="loading">
+    <span class="visually-hidden">調査中...</span>
+  </div>
+  <span class="text-info nowloading">&nbsp;調査中..</span>
+</div>
+
+<div id="hide_contents">
+
+
+<div class="container" style="margin-top:3rem;margin-bottom:15rem;">
+
+    <div style="display:inline;">
+    <a class="title" role="button" href="https://purakome.net">
+      <img src="{% static 'image/siteicon_anime.webp' %}" height="90" width="230" alt="サイトアイコン">
+    </a>
+    <h1 style="font-size:2.4rem; font-weight:bold;text-align:center;margin-top:2rem;">ツイッター感情分析ツール</h1>
+    </div>
+
+    <div class="row" style="margin-top:3rem;margin-bottom:1rem;">
+
+    <p style="font-size:1.5rem; text-align:center;margin-bottom:2rem;">【とてもポジティブ】,【ポジティブ】,【ネガティブ】,【とてもネガティブ】の4段階でツイートの感情をAIが分類,一覧表示します。<br>評判調査やブログの引用ツイート検索等にご活用ください。(～1週間前のツイートまで検索できます)</p>
+    <form class="col-md-auto" style="margin:auto;" action="{% url 'sentiment_demo' %}" method="post">
+    {% csrf_token %}
+        <div class="input-group">
+            <input type="search" required="required" style="height:40px;" placeholder="本文に含まれるキーワード入力" name="talk" id="form1" class="form-control" />
+
+            <button type="submit" class="btn btn-dark">
+              検索
+            </button>
+        </div>
+        <br>
+        <fieldset class="container py-5">
+            <legend style="text-align:center">検索オプション</legend>
+            <div class="input-group">
+                <div class="mb-3">
+                    <input class="form-check-input" type="checkbox" value="" id="retweet_box" checked disabled>
+                    <label class="form-check-label" for="retweet_box">
+                      リツイートを除く
+                    </label>
+                </div>
+                <div class="mb-3">
+                    <input class="form-check-input" style="margin-left:1rem;" type="checkbox" value="y" id="reply_box" name="reply_chk" checked>
+                    <label class="form-check-label" for="reply_box">
+                      リプライを除く
+                    </label>
+                </div>
+                <div class="mb-3">
+                    <input class="form-check-input" style="margin-left:1rem;" type="checkbox" value="y" id="media_box" name="media_chk" checked>
+                    <label class="form-check-label" for="media_box">
+                      画像/動画ありツイートを優先表示
+                    </label>
+                </div>
+                <div class="mb-3">
+                    <input class="form-check-input" style="margin-left:1rem;" type="checkbox" value="y" id="content_box" name="content_chk" checked>
+                    <label class="form-check-label" for="content_box">
+                      本文のみ検索する
+                    </label>
+                </div>
+ 
+            </div>
+        </fieldset>
+
+    </form>
+
+    <div style="font-size:1.5rem; text-align:center;margin-top:2rem;text-align:center;">
+    <p>共有する</p>
+    <div style="display: inline-block; ">{% post_to_twitter "ツイッター感情分析ツール | ぷらこめ" "https://purakome.net/sentiment/" "<i class='fab fa-twitter-square fa-lg'></i>" %}</div>
+    <div style="display: inline-block; ">{% post_to_facebook "https://purakome.net/sentiment/" "<i class='fab fa-facebook-square fa-lg'></i> " %}</div>
+    <div style="display: inline-block; ">{% post_to_linkedin "https://purakome.net/sentiment/" %}</div>
+    <div style="display: inline-block; ">{% post_to_reddit "ツイッター感情分析ツール | ぷらこめ" "https://purakome.net/sentiment/" "<i class='fab fa-reddit fa-lg'></i> " %}</div>
+    <div style="display: inline-block; ">{% post_to_telegram "ツイッター感情分析ツール | ぷらこめ" "https://purakome.net/sentiment/" "<i class='fab fa-telegram fa-lg'></i> " %}</div>
+
+    </div>
+
+    </div>
+    {% if key %}
+    <hr>
+    <p style="font-size:1.7rem; text-align:left;">キーワード:<span style="font-weight:bold;">{{query|safe}}</span></p>
+    {% endif %}
+    {% if msg %}
+    <p style="font-size:1.7rem; text-align:left;margin-bottom:1rem;">{{msg}}</p>
+    {% endif %}
+
+    {% if total > 0 %}
+    <p style="margin-top:2rem;font-size:1.7rem; font-weight:bold;">{{total}}件見つかりました</p>
+    <div style="height:170px;text-align:left;">
+      <canvas id="PieChart_demo"></canvas>
+    </div>
+    {% elif total == 0 %}
+    <p style="margin-top:2rem;font-size:1.7rem; font-weight:bold;">ポジティブ/ネガティブなツイートは見つかりませんでした。<br>キーワードを変えてお試しください。</p>
+    {% endif %}
+
+    {% if p2data %}
+     <hr>
+            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+              とてもポジティブなツイート:{{p2data|length}}件
+            </p>
+
+           <table class="table table-sm" style="margin-bottom:6rem;">
+
+              <tbody>
+
+                  {% for item in p2data %}
+                  {% if item %}
+                  <tr>
+
+                      <td><i class="far fa-laugh-squint fa-2x img-fluid"></i></td>
+
+
+
+                      <td class="tweet">
+                      <blockquote>
+                          <div class="t_top">
+
+                             <div class="profile_wrap">
+                               <a href="{{item.u_id}}" target="_blank">
+                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}">
+                               </a>
+                             </div>
+
+                             <div class="username">
+                               <p>
+                                 <a href="{{item.u_id}}" target="_blank">
+                                   {{item.u_name}}
+                                 </a>
+                               </p>
+                               <a href="{{item.u_id}}" target="_blank">
+                                 @{{item.s_name}}
+                               </a>
+                             </div>
+                          </div>
+                          <span class="t_contents">
+                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | highlight_only_keys:key | safe}}
+                               {% endwith %}
+                               {% endwith %}
+                          </span>
+
+                          <div class="t_bottom">
+                              <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                              <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                              <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                              <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                          </div>
+                          <div>
+                              <a class="btn btn-outline-info" style="vertical-align: middle;" href="https://publish.twitter.com/?query=https%3A%2F%2Ftwitter.com%2F{{item.s_name}}%2Fstatus%2F{{item.t_id_char}}&widget=Tweet" target="_blank">埋め込むコード取得</a>
+                          </div>
+                          <br>
+                      </blockquote>
+                      </td>
+
+                     
+                      <td style="vertical-align:top;">
+                      <blockquote>
+
+                          <img class="lazyload logo" data-src="{% static 'image/blue.png' %}">
+                      </blockquote>
+                      </td>
+                  </tr>
+
+                  {% endif %}
+                  {% endfor %}
+              </tbody>
+           </table>
+
+    {% endif %}
+
+    {% if p1data %}
+     <hr>
+            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+              ポジティブなツイート:{{p1data|length}}件
+            </p>
+
+           <table class="table table-sm" style="margin-bottom:6rem;">
+
+              <tbody>
+
+                  {% for item in p1data %}
+                  {% if item %}
+                  <tr>
+
+                      <td><i class="far fa-smile-beam fa-2x img-fluid"></i></td>
+
+                      <td class="tweet">
+                      <blockquote>
+                          <div class="t_top">
+
+                             <div class="profile_wrap">
+                               <a href="{{item.u_id}}" target="_blank">
+                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}">
+                               </a>
+                             </div>
+
+                             <div class="username">
+                               <p>
+                                 <a href="{{item.u_id}}" target="_blank">
+                                   {{item.u_name}}
+                                 </a>
+                               </p>
+                               <a href="{{item.u_id}}" target="_blank">
+                                 @{{item.s_name}}
+                               </a>
+                             </div>
+                          </div>
+                          <span class="t_contents">
+                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | highlight_only_keys:key | safe}}
+                               {% endwith %}
+                               {% endwith %}
+                          </span>
+
+                          <div class="t_bottom">
+                              <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                              <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                              <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                              <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                          </div>
+                          <div>
+                              <a class="btn btn-outline-info" style="vertical-align: middle;" href="https://publish.twitter.com/?query=https%3A%2F%2Ftwitter.com%2F{{item.s_name}}%2Fstatus%2F{{item.t_id_char}}&widget=Tweet" target="_blank">埋め込むコード取得</a>
+                          </div>
+                          <br>
+                      </blockquote>
+                      </td>
+
+                      
+                      <td style="vertical-align:top;">
+                      <blockquote>
+
+                          <img class="lazyload logo" data-src="{% static 'image/blue.png' %}">
+                      </blockquote>
+                      </td>
+                  </tr>
+
+                  {% endif %}
+                  {% endfor %}
+              </tbody>
+           </table>
+
+    {% endif %}
+
+    {% if n1data %}
+    <hr>
+            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+              ネガティブなツイート:{{n1data|length}}件
+            </p>
+
+           <table class="table table-sm" style="margin-bottom:6rem;">
+
+              <tbody>
+
+                  {% for item in n1data %}
+                  {% if item %}
+                  <tr>
+
+                     <td><i class="far fa-grin-beam-sweat fa-2x img-fluid"></i></td>
+
+                      <td class="tweet">
+                      <blockquote>
+                          <div class="t_top">
+
+                             <div class="profile_wrap">
+                               <a href="{{item.u_id}}" target="_blank">
+                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}">
+                               </a>
+                             </div>
+
+                             <div class="username">
+                               <p>
+                                 <a href="{{item.u_id}}" target="_blank">
+                                   {{item.u_name}}
+                                 </a>
+                               </p>
+                               <a href="{{item.u_id}}" target="_blank">
+                                 @{{item.s_name}}
+                               </a>
+                             </div>
+                          </div>
+                          <span class="t_contents">
+                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | highlight_only_keys:key | safe}}
+                               {% endwith %}
+                               {% endwith %}
+                          </span>
+
+                          <div class="t_bottom">
+                              <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                              <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                              <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                              <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                          </div>
+                          <div>
+                              <a class="btn btn-outline-info" style="vertical-align: middle;" href="https://publish.twitter.com/?query=https%3A%2F%2Ftwitter.com%2F{{item.s_name}}%2Fstatus%2F{{item.t_id_char}}&widget=Tweet" target="_blank">埋め込むコード取得</a>
+                          </div>
+                          <br>
+                      </blockquote>
+                      </td>
+
+                      
+                      <td style="vertical-align:top;">
+                      <blockquote>
+
+                          <img class="lazyload logo" data-src="{% static 'image/blue.png' %}">
+                      </blockquote>
+                      </td>
+                  </tr>
+
+                  {% endif %}
+                  {% endfor %}
+              </tbody>
+           </table>
+
+    {% endif %}
+
+    {% if n2data %}
+    <hr>
+            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+              とてもネガティブなツイート:{{n2data|length}}件
+            </p>
+
+           <table class="table table-sm" style="margin-bottom:6rem;">
+
+              <tbody>
+
+                  {% for item in n2data %}
+                  {% if item %}
+                  <tr>
+
+                      <td><i class="far fa-tired fa-2x img-fluid"></i></td>
+
+                      <td class="tweet">
+                      <blockquote>
+                          <div class="t_top">
+
+                             <div class="profile_wrap">
+                               <a href="{{item.u_id}}" target="_blank">
+                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}">
+                               </a>
+                             </div>
+
+                             <div class="username">
+                               <p>
+                                 <a href="{{item.u_id}}" target="_blank">
+                                   {{item.u_name}}
+                                 </a>
+                               </p>
+                               <a href="{{item.u_id}}" target="_blank">
+                                 @{{item.s_name}}
+                               </a>
+                             </div>
+                          </div>
+                          <span class="t_contents">
+                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | highlight_only_keys:key | safe}}
+                               {% endwith %}
+                               {% endwith %}
+                          </span>
+
+                          <div class="t_bottom">
+                              <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                              <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                              <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                              <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                          </div>
+                          <div>
+                              <a class="btn btn-outline-info" style="vertical-align: middle;" href="https://publish.twitter.com/?query=https%3A%2F%2Ftwitter.com%2F{{item.s_name}}%2Fstatus%2F{{item.t_id_char}}&widget=Tweet" target="_blank">埋め込むコード取得</a>
+                          </div>
+                          <br>
+                      </blockquote>
+                      </td>
+
+                      
+                      <td style="vertical-align:top;">
+                      <blockquote>
+
+                          <img class="lazyload logo" data-src="{% static 'image/blue.png' %}">
+                      </blockquote>
+                      </td>
+                  </tr>
+
+                  {% endif %}
+                  {% endfor %}
+              </tbody>
+           </table>
+
+    {% endif %}
+
+<div style="max-width:60rem;line-height:3rem;margin: auto; margin-top:6rem; margin-bottom:3rem;">
+<hr>
+<h2 class="text-center">【使い方】</h2>
+
+<table class="table caption-top" style="font-size:1.5rem;">
+    <caption>公式ツイッターで使用できる以下オペレータが使用できます。</caption>
+    <thead class="table-light">
+        <tr>
+          <th></th><th>例</th><th>説明</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>半角スペース</td><td>犬 猫</td><td>&quot;犬&quot;と&quot;猫&quot;を両方含むツイートを検索</td></tr>
+        <tr><td>引用符</td><td>&quot;犬 猫&quot;</td><td>&quot;犬&nbsp;猫&quot;を含むツイートを検索</td></tr>
+        <tr><td>OR</td><td>犬 OR 猫</td><td>&quot;犬&quot;または&quot;猫&quot;を含むツイートを検索</td></tr>
+        <tr><td>-</td><td>犬 -猫</td><td>&quot;犬&quot;を含むが&quot;猫&quot;は含まないツイートを検索</td></tr>
+        <tr><td>from:</td><td>from:doglover</td><td>アカウント名@dogloverのツイートを検索</td></tr>
+        <tr><td>to:</td><td>to:doglover</td><td>アカウント名@dogloverへの返信ツイートを検索</td></tr>
+        <tr><td>@</td><td>@doglover</td><td>アカウント名@dogloverへのメンションを含むツイートを検索</td></tr>
+        <tr><td>filter:safe</td><td>犬 filter:safe</td><td>&quot;犬&quot;を含むがセンシティブ(暴力的/性的等)なツイートは除外</td></tr>
+        <tr><td>filter:media</td><td>犬 filter:media</td><td>&quot;犬&quot;を含む画像付きのツイートを検索</td></tr>
+        <tr><td>since:</td><td>犬 since:2022-10-11</td><td>&quot;犬&quot;を含む2022年10月11日以降につぶやかれたツイートを検索</td></tr>
+        <tr><td>until:</td><td>犬 until:2022-10-11</td><td>&quot;犬&quot;を含む2022年10月11日までにつぶやかれたツイートを検索</td></tr>
+    </tbody>
+</table>
+
+</div>
+
+<div style="max-width:60rem;line-height:3rem;margin: auto; margin-top:4rem; margin-bottom:3rem;">
+<h2 class="text-center">AIの判定はどれだけ信用できる？</h2>
+<table class="table table-sm" style="font-size:1.5rem;">
+    <caption>＊該当ジャンルから無作為に選んだツイート200個(ポジティブ100,ネガティブ100)をテストに使用。数値は適合率と再現率の調和平均スコア。</caption>
+    <thead class="table-light">
+        <tr>
+          <th></th><th>very pos</th><th>pos</th><th>neg</th><th>very neg</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr><td>政治・経済</td><td>85%</td><td>89%</td><td>83%</td><td>81%</td></tr>
+        <tr><td>スポーツ</td><td>87%</td><td>91%</td><td>84%</td><td>81%</td></tr>
+        <tr><td>芸能</td><td>87%</td><td>92%</td><td>83%</td><td>82%</td></tr>
+        <tr><td>エンタメ</td><td>89%</td><td>93%</td><td>85%</td><td>82%</td></tr>
+        <tr><td>科学・IT</td><td>85%</td><td>88%</td><td>82%</td><td>79%</td></tr>
+    </tbody>
+</table>
+
+</div>
+
+<div style="max-width:60rem;line-height:3rem;margin: auto;background:floralwhite; border:black; margin-top:4rem; margin-bottom:3rem;">
+<h2 class="text-center">【注意事項】</h2>
+<ul>
+<li class="text-left" style="font-size:1.1rem;">過去1週間までのツイートを検索可能です。</li>
+<li class="text-left" style="font-size:1.1rem;">API取得制限のため、同一ユーザーのご利用は１日10回までに制限させていただいています。</li>
+<li class="text-left" style="font-size:1.1rem;">リアルタイムで検索・分析するため、結果表示(最大100件)までに1分程度かかる場合があります。</li>
+<li class="text-left" style="font-size:1.1rem;">スパムツイートや不適切な表現が含まれるツイートは表示されません。感情分析はAIによるもので実際のツイート投稿者の意図とは異なる場合があります。</li>
+<li class="text-left" style="font-size:1.1rem;">どのジャンルの話題でも感情分析できますが、特にエンタメが精度高めです。</li>
+</ul>
+</div>
+
+
+</div>
+
+
+
+
+
+<div id="page_top">
+  <a href="#"></a>
+</div>
+
+
+<footer class="py-5 bg-black">
+    <div class="container">
+        <p class="m-0 text-center text-white small">Copyright &copy; ぷらこめ 2022</p>
+        <hr>
+        <a href="{% url 'contact' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">お問い合わせ</p>
+        </a>
+        <hr>
+        <a href="{% url 'sitepolicy' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">サイトポリシー</p>
+        </a>
+        <hr>
+        <a href="{% url 'aboutus' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">About us</p>
+        </a>
+        <br>
+        <br>
+
+    </div>
+
+</footer>
+
+
+</div>
+
+{% if total > 0 %}
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
+<script>
+window.addEventListener("load", function() {
+    
+    var dataLabelPlugin = {
+        afterDatasetsDraw: function (chart, easing) {
+            // To only draw at the end of animation, check for easing === 1
+            var ctx = chart.ctx;
+
+            chart.data.datasets.forEach(function (dataset, i) {
+                var dataSum = 0;
+                dataset.data.forEach(function (element){
+                    dataSum += element;
+                });
+
+                var meta = chart.getDatasetMeta(i);
+                if (!meta.hidden) {
+                    meta.data.forEach(function (element, index) {
+                        // Draw the text in black, with the specified font
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+
+                        var fontSize = 12;
+                        var fontStyle = 'normal';
+                        var fontFamily = 'Helvetica Neue';
+                        ctx.font = Chart.helpers.fontString(fontSize, fontStyle, fontFamily);
+
+                        // Just naively convert to string for now
+                        //var labelString = chart.data.labels[index];
+                        var dataString = Math.round((dataset.data[index] / dataSum) * 100).toString() + "%";
+
+                        // Make sure alignment settings are correct
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        var padding = 5;
+                        var position = element.tooltipPosition();
+                        //ctx.fillText(labelString, position.x, position.y - (fontSize / 2) - padding);
+                        ctx.fillText(dataString, position.x, position.y + (fontSize / 2) - padding);
+                    });
+                }
+            });
+        }
+    };
+
+    var pie_ctx = document.getElementById('PieChart_demo');
+
+    var pie_chart = new Chart(pie_ctx,{
+    type:'pie',
+
+    data:{
+            datasets: [{
+                data: [
+                {{p2data|length}},
+                {{p1data|length}},
+                {{n1data|length}},
+                {{n2data|length}}
+                ],
+
+
+                backgroundColor: ['#1E90FF','#00BFFF','#E9967A','#DB7093']
+            }],
+
+            // These labels appear in the legend and in the tooltips when hovering different arcs
+            labels: [
+                'とてもポジティブ',
+                'ポジティブ',
+                'ネガティブ',
+                'とてもネガティブ'
+            ]
+    },
+
+    options:{
+
+      maintainAspectRatio: false,
+      responsive: true,
+
+      legend:{
+        display: true,
+      },
+      title:{
+        display:false,
+        fontSize:15,
+        text: 'ポジティブ/ネガティブ割合',
+      },
+
+
+    },
+    plugins: [dataLabelPlugin],
+
+    });
+});
+</script>
+{% endif %}
+
+
+<script>
+
+var loading = document.getElementById('loading');
+var contents = document.getElementById('hide_contents');
+
+window.addEventListener("pageshow", () => {
+  if( loading.parentNode.classList.contains('vh-100') == true ){
+     console.log("readed!");
+     loading.classList.add('d-none');
+     loading.parentNode.classList.replace('vh-100', 'd-none');
+     contents.classList.remove('d-none');
+
+  }
+});
+
+
+
+window.addEventListener("beforeunload", () => {
+
+    console.log("moving..");
+
+      loading.classList.remove('d-none');
+      loading.parentNode.classList.replace('d-none', 'vh-100');
+      contents.classList.add('d-none');
+
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-rc.2/lazyload.min.js"></script>
+
+<script>lazyload();</script>
+
+</body>
+</html>

@@ -1,0 +1,141 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load boost %}
+{% load filter %}
+
+{% block title %}アニメツイッター穴埋め推理クイズ問題|ぷらこめ{% endblock %}
+{% block head %}<link rel="canonical" href="https://purakome.net/sentiment/anime/quiz/">{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
+{% block contents %}
+{% if questions == None %}
+<div class="container" style="text-align:center;margin-top:3rem;">
+  <p style="font-size:1.5rem;">最初からやり直してください</p>
+  <div style="margin-top:3rem;margin-bottom:3rem;">
+    <a role="button" class="more_content" href="{% url 'quiz_index' %}" name="toppage">TOPに戻る</a>
+  </div>
+</div>
+<br>
+<br>
+{% else %}
+<div class="container" style="margin-top:3rem;">
+
+
+    <h1 style="font-weight:bold;">{{level_text}}{{number}}問目</h1>
+    <p style="font-size:1.5rem;">{{q_text}}</p>
+    <p style="text-align:right;font-size:1.3rem;">(ブラウザの「戻る」や「更新」は使用しないでください)</p>
+<!--投稿を2tableで表示 -->
+    <table class="table quiz-table">
+    <tbody class="quiz-tbody">
+    <tr class="quiz-tr">
+        <td class="quiz-td">
+            <table class="table table-sm mb-0 bg-white">
+              <thead class="bg-light">
+                <tr>
+                  <th></th>
+                  <th></th>  
+                </tr>
+              </thead>
+              <tbody>
+              {% for question in questions|slice:":5" %}
+              <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                    
+                      <img
+                          data-src={% static 'image/sampleface.webp' %}
+                          alt=""
+                          style="width: 35px; height: 40px"
+                          class="lazyload rounded-circle"
+                          />
+          
+                    </div>
+                </td>
+                
+                <td>
+                  <div style="font-size:1.4rem;font-style: italic;">
+                    {{question.content | safe}}
+                  </div>
+                      <div class="ms-3">
+                        <p class="fw-bold mb-1"></p>
+                        <p class="text-muted mb-0">{{question.date}}</p>
+                      </div>                      
+                </td>
+              </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+        </td>
+    <!-- 2列目の投稿 -->
+        <td>
+        <table class="table table-sm mb-0 bg-white">
+          <thead class="bg-light">
+              <tr>
+                <th></th>
+                <th></th>  
+              </tr>
+          </thead>
+          <tbody>
+              {% for question in questions|slice:"5:" %}
+              <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                    
+                      <img
+                          data-src={% static 'image/sampleface.webp' %}
+                          alt=""
+                          style="width: 35px; height: 40px"
+                          class="lazyload rounded-circle"
+                          />
+          
+                    </div>
+                </td>
+                
+                <td>
+                  <div style="font-size:1.4rem;font-style: italic;">
+                    {{question.content | safe}}
+                  </div>
+                      <div class="ms-3">
+                        <p class="fw-bold mb-1"></p>
+                        <p class="text-muted mb-0">{{question.date}}</p>
+                      </div>                      
+                </td>
+              </tr>
+              {% endfor %}
+          </tbody>
+        </table>
+        
+        </td>
+    </tr>
+    </tbody>
+    </table>
+    
+      <h4  style="margin-top:3rem; margin-bottom:3rem;">
+    
+      <form action="{% url 'answers' number %}" method="post">
+          {% csrf_token %}  
+          {% with val=answers.0|join_comma:correct|join_comma:score|join_comma:history|join_comma:level|join_comma:level_text|join_comma:t_ids %}
+            <button type="submit" class="quiz_choice" value="{{val}}" name="answers0">{{answers.0|quiz_answer}}</button>
+          {% endwith %}
+          {% with val=answers.1|join_comma:correct|join_comma:score|join_comma:history|join_comma:level|join_comma:level_text|join_comma:t_ids %}  
+            <button type="submit" class="quiz_choice" value="{{val}}" name="answers1">{{answers.1|quiz_answer}}</button>
+          {% endwith %}
+          {% with val=answers.2|join_comma:correct|join_comma:score|join_comma:history|join_comma:level|join_comma:level_text|join_comma:t_ids %}    
+            <button type="submit" class="quiz_choice" value="{{val}}" name="answers2">{{answers.2|quiz_answer}}</button>
+          {% endwith %}
+          {% with val=answers.3|join_comma:correct|join_comma:score|join_comma:history|join_comma:level|join_comma:level_text|join_comma:t_ids %}    
+            <button type="submit" class="quiz_choice" value="{{val}}" name="answers3">{{answers.3|quiz_answer}}</button>
+          {% endwith %}
+      </h4>
+      
+    
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+
+{% endblock %}

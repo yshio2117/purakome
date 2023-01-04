@@ -1,0 +1,629 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load filter %}
+
+{% block title %}{{short_name}} | 各話ポジネガ評価ランキング | ぷらこめ{% endblock %}
+
+{% block contents %}
+
+
+<div class="container">
+
+<h1 style="margin-top:3rem;">
+<span class="sub_titles" style="color:black;">
+アニメ【{{title_name}}】 ポジネガ評価・感想まとめ
+</span>
+</h1> 
+<hr>
+<!--<p style="font-size:1.3rem;">(調査期間:{{s_date|date:"Y年n月j日"}}-{{e_date|date:"n月j日"}})</p>-->
+
+<h2 style="margin-top:3rem;font-size:1.5rem;font-weight:bold;">高評価エピソードランキング</h2> 
+
+<!-- 一覧 -->
+<ol class="index_ranktop">
+  {% for t in title_rank %}
+  <li><a href="#" style="color:black; text-decoration:none;" class="title_sum">{{t.title}}</a></li>
+  
+  {% endfor %}              
+</ol>
+
+
+<!-- tableで表示する場合 -->
+<table class="table index-table">
+  <tr style="font-size:1.2rem;">
+      <th>順位<br>(高評価率)</th>
+      <th>エピソード</th>
+      <th>ポジティブ/ネガティブな感想の割合</th>
+      <th style="min-width:170px;"></th>
+      <th style="min-width:170px;"></th>
+  </tr>
+  {% for t in title_rank %}
+  <tr>
+      <td><p class="title_list" style="font-size:1.6rem;font-weight:bold;text-align:center;">{{forloop.counter}}位</p>
+          <div> <div class="starRatingContainer" style=" margin : 0 auto;"> <div class="ratingSystem1"> </div> </div>  <div class="ratingHolder"> </div> </div>
+          <div style="font-size:1.4rem;font-weight:lighter;text-align:center;">(<span class="p-score">高評価率:</span>{{t.満足度|floatformat:1}}%)</div>
+      </td>
+      <td>
+          <div style="margin-bottom:2rem;">
+            <h3 style="font-size:1.6rem;font-weight:bold;text-align:center;">{{t.title}}</h3>
+          </div>
+        <div style="text-align:center;">
+              {% with ep_str=t.ep|to_str %}
+              {% with filename="image/episodes/"|add:t.url|add:"_"|add:ep_str|add:'.webp' %}
+              <a href="{% url 'anime_episode' name=t.url episode=t.ep %}">
+              <img class="lazyload" height=200px width=300px src="{% static 'image/empty.jpg' %}" data-src="{% static filename %}" alt="{{t.url}}_{{t.ep}}_image">
+              </a>
+              {% endwith %}
+              {% endwith %}
+              <!--<p>©Spider Lily／アニプレックス・ABCアニメーション・BS11</p>-->
+        </div>
+      </td>    
+      <td style=" vertical-align: middle;">
+              <!--ポジティブ・ネガティブ割合グラフ -->
+
+        <div>  
+
+            <canvas class="pie_title" style="max-width:350px; margin : 0 auto;">
+                <span style="display:none;">{{t.p2count}},{{t.p1count}},{{t.n1count}},{{t.n2count}}</span>
+            </canvas>
+
+        </div>
+        <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ポジティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"0:5" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ネガティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"5:10" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+        <p style="font-size:1rem;">
+        <a role="button" class="more_content" href="{% url 'anime_episode' name=t.url episode=t.ep %}" >もっと見る</a>     
+        </p> 
+      </td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% if chara_rank %}
+<hr>
+<!-- キャラクターランキング -->
+<h2 style="margin-top:3rem;font-size:1.5rem;font-weight:bold;">高評価キャラクターランキング</h2> 
+<!-- 一覧 -->
+<ol class="index_ranktop">
+  {% for t in chara_rank %}
+  <li><a href="#" style="color:black; text-decoration:none;" class="chara_sum">{{t.chara}}</a></li>
+  
+  {% endfor %}              
+</ol>
+<table class="table index-table">
+  <tr style="font-size:1.2rem;">
+      <th>順位<br>(高評価率)</th>
+      <th>タイトル</th>
+      <th>ポジティブ/ネガティブな感想の割合</th>
+      <th></th>
+      <th></th>
+  </tr>
+  {% for t in chara_rank %}
+  <tr>
+      <td><p class="chara_list" style="font-size:1.6rem;font-weight:bold;text-align:center;">{{forloop.counter}}位</p>
+          <div> <div class="starRatingContainer" style=" margin : 0 auto;"> <div class="ratingSystem2"> </div> </div>  <div class="ratingHolder"> </div> </div>
+          <div style="font-size:1.4rem;font-weight:lighter;text-align:center;">(<span class="p-score">高評価率:</span>{{t.満足度|floatformat:1}}%)</div>
+      </td>
+      <td>
+            <div style="margin-bottom:2rem;">
+              <h3 style="font-size:1.6rem;font-weight:bold;text-align:center;">{{t.chara}}</h3>
+            </div>          
+            <div style="text-align:center;">
+                  {% with address="image/wordcloud/result/character/"|add:t.url %}
+                  {% with filename=address|add:'_wc.webp' %}
+                  <img class="lazyload" style="height:300px;" src="{% static 'image/empty.jpg' %}" data-src="{% static filename %}" alt="{{t.chara}}">
+                  {% endwith %}
+                  {% endwith %}
+            </div>
+      </td>    
+      <td>
+              <!--ポジティブ・ネガティブ割合グラフ -->
+
+        <div>  
+            <canvas class="pie_title" style="max-width:300px; margin : 0 auto;">
+                <span style="display:none;">{{t.p2count}},{{t.p1count}},{{t.n1count}},{{t.n2count}}</span>
+            </canvas>
+        </div>
+        <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ポジティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"0:5" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ネガティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"5:10" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% if op_rank %}
+<!-- opランキング -->
+<h2 style="margin-top:3rem;font-size:1.5rem;font-weight:bold;">OP曲のポジネガ評価・感想まとめ</h2> 
+<!-- 一覧 -->
+<ol class="index_ranktop">
+  {% for t in op_rank %}
+  <li><a href="#" style="color:black; text-decoration:none;" class="op_sum">{{t.op}}</a></li>
+  
+  {% endfor %}              
+</ol>
+<table class="table index-table">
+  <tr style="font-size:1.2rem;">
+      <th>順位<br>(高評価率)</th>
+      <th>タイトル</th>
+      <th>ポジティブ/ネガティブな感想の割合</th>
+      <th></th>
+      <th></th>
+  </tr>
+  {% for t in op_rank %}
+  <tr>
+      <td><p class="op_list" style="font-size:1.6rem;font-weight:bold;text-align:center;">{{forloop.counter}}位</p>
+          <div> <div class="starRatingContainer" style=" margin : 0 auto;"> <div class="ratingSystem3"> </div> </div>  <div class="ratingHolder"> </div> </div>
+          <div style="font-size:1.4rem;font-weight:lighter;text-align:center;">(<span class="p-score">高評価率:</span>{{t.満足度|floatformat:1}}%)</div>
+      </td>
+      <td>
+        <div style="margin-bottom:2rem;">
+          <h3 style="font-size:1.6rem;font-weight:bold;text-align:center;">{{t.op}}</h3>
+        </div>          
+        <div style="text-align:center;">
+              {% with address="image/wordcloud/result/op/"|add:t.url %}
+              {% with filename=address|add:'_wc.webp' %}
+
+              <img class="lazyload" style="height:300px;" src="{% static 'image/empty.jpg' %}" data-src="{% static filename %}" alt="{{t.op}}">
+
+              {% endwith %}
+              {% endwith %}
+        </div>
+      </td>    
+      <td>
+              <!--ポジティブ・ネガティブ割合グラフ -->
+        <div>  
+            <canvas class="pie_title" style="max-width:300px; margin : 0 auto;">
+                <span style="display:none;">{{t.p2count}},{{t.p1count}},{{t.n1count}},{{t.n2count}}</span>
+            </canvas>
+        </div>
+        <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ポジティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"0:5" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ネガティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"5:10" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% if ed_rank %}
+<!-- edランキング -->
+<h2 style="margin-top:3rem;font-size:1.5rem;font-weight:bold;">ED曲のポジネガ評価・感想まとめ</h2> 
+<!-- 一覧 -->
+<ol class="index_ranktop">
+  {% for t in ed_rank %}
+  <li><a href="#" style="color:black; text-decoration:none;" class="ed_sum">{{t.ed}}</a></li>
+  
+  {% endfor %}              
+</ol>
+<table class="table index-table">
+  <tr style="font-size:1.2rem;">
+      <th>順位<br>(高評価率)</th>
+      <th>タイトル</th>
+      <th>ポジティブ/ネガティブな感想の割合</th>
+      <th></th>
+      <th></th>
+  </tr>
+  {% for t in ed_rank %}
+  <tr>
+      <td><p class="ed_list" style="font-size:1.6rem;font-weight:bold;text-align:center;">{{forloop.counter}}位</p>
+          <div> <div class="starRatingContainer" style=" margin : 0 auto;"> <div class="ratingSystem4"> </div> </div>  <div class="ratingHolder"> </div> </div>
+          <div style="font-size:1.4rem;font-weight:lighter;text-align:center;">(<span class="p-score">高評価率:</span>{{t.満足度|floatformat:1}}%)</div>
+      </td>
+      <td>
+        <div style="margin-bottom:2rem;">
+          <h3 style="font-size:1.6rem;font-weight:bold;text-align:center;">{{t.ed}}</h3>
+        </div>          
+        <div style="text-align:center;">
+              {% with address="image/wordcloud/result/ed/"|add:t.url %}
+              {% with filename=address|add:'_wc.webp' %}
+
+              <img class="lazyload" style="height:300px;" src="{% static 'image/empty.jpg' %}" data-src="{% static filename %}" alt="{{t.ed}}">
+
+              {% endwith %}
+              {% endwith %}
+        </div>  
+      </td>
+      <td>
+              <!--ポジティブ・ネガティブ割合グラフ -->
+        <div>  
+            <canvas class="pie_title" style="max-width:300px; margin : 0 auto;">
+                <span style="display:none;">{{t.p2count}},{{t.p1count}},{{t.n1count}},{{t.n2count}}</span>
+            </canvas>
+        </div>
+        <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ポジティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"0:5" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+      <td>
+        <ol class="popular_reason"><h4 class="popular_reason_title marker">ネガティブな感想TOP5</h4>
+            {% for sum in t.summarys|slice:"5:10" %}
+            {% if sum %}
+            <li class="popular_reason1"><h5 style="display:inline;font-size:1.2rem;">{{sum | safe}}</h5></li>
+            {% else %}
+            {% endif %}
+            {% endfor %}
+        </ol>
+
+      </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+               
+<!-- container -->
+</div>
+
+
+
+
+
+
+
+{% endblock %}
+
+
+
+{% block javascript %}
+
+
+    
+<script>
+// 円グラフ表示    
+    
+// id割り付け
+let moji = "pieID"
+let pie = document.getElementsByClassName("pie_title");
+
+    // pieラベル名＋%表示させる
+    var dataLabelPlugin = {
+        afterDatasetsDraw: function (chart, easing) {
+            // To only draw at the end of animation, check for easing === 1
+            var ctx = chart.ctx;
+
+            chart.data.datasets.forEach(function (dataset, i) {
+                var dataSum = 0;
+                dataset.data.forEach(function (element){
+                    dataSum += element;
+                });
+
+                var meta = chart.getDatasetMeta(i);
+                if (!meta.hidden) {
+                    meta.data.forEach(function (element, index) {
+                        // Draw the text in black, with the specified font
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+
+                        var fontSize = 12;
+                        var fontStyle = 'normal';
+                        var fontFamily = 'Helvetica Neue';
+                        ctx.font = Chart.helpers.fontString(fontSize, fontStyle, fontFamily);
+
+                        // Just naively convert to string for now
+                        //var labelString = chart.data.labels[index];
+                        var dataString = Math.round((dataset.data[index] / dataSum) * 100).toString() + "%";
+
+                        // Make sure alignment settings are correct
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        var padding = 5;
+                        var position = element.tooltipPosition();
+                        //ctx.fillText(labelString, position.x, position.y - (fontSize / 2) - padding);
+                        ctx.fillText(dataString, position.x, position.y + (fontSize / 2) - padding);
+                    });
+                }
+            });
+        }
+    };    
+    
+
+    
+        
+function displayChart(canvasId, chartType, counts) {
+  var ctx = document.getElementById(canvasId);
+  var myPieChart = new Chart(ctx, {
+    type: chartType,
+    data: {
+            datasets: [{
+                data: [Number(counts[0]),
+                       Number(counts[1]),
+                       Number(counts[2]),
+                       Number(counts[3])
+                       ],
+                       
+                backgroundColor: ['#1E90FF','#00BFFF','#E9967A','#DB7093']
+            }],
+            labels: [
+                '最高評価',
+                '高評価',
+                '低評価',
+                '最低評価'
+            ]
+            
+    },
+    options:{//グラフのオプション
+      //maintainAspectRatio: false,//CSSで大きさを調整するため、自動縮小をさせない
+      maintainAspectRatio: true,
+      responsive: true, // trueにするとスマホ領域からはみでる
+
+      legend:{
+        display: true,
+      },
+      title:{//上部タイトル表示の設定
+        display: false,
+
+      },
+
+    
+    },
+    plugins: [dataLabelPlugin], // パーセント表示させるプラグイン https://beiznotes.org/show-percentage-on-chart-js/
+
+  });
+}
+
+for (let j=0;j<=pie.length-1;j++) {
+    pie[j].setAttribute("id",moji+j);
+    let counts = pie[j].textContent.split(",");
+
+    displayChart(`pieID${j}`, "pie", counts);
+}
+
+
+</script>
+<!-- Initialize Swiper -->
+<script>
+  var swiper = new Swiper(".mySwiper", {
+    //slidesPerView: 4,
+    //spaceBetween: 20,
+    freeMode: true,
+    autoplay: {
+      delay: 10000, //7秒後に移動
+      disableOnInteraction: false,
+    },
+    breakpoints: {
+      480: {
+        slidesPerView: 1,
+        spaceBetween: 5,
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 10,
+      },
+      1024: {
+        slidesPerView: 4,
+        spaceBetween: 10,
+      },
+    },
+  });
+</script>
+
+<script>
+
+
+// もっと読むボタン
+window.onload = function() {
+  //複数のdiv要素に動的なidをつける
+// title
+    let moji_t = "title_index"
+
+    let title_sum = document.getElementsByClassName("title_sum");
+    let title_list = document.getElementsByClassName("title_list");
+
+    for(let k=0;k<=title_sum.length-1;k++){
+        
+        title_list[k].setAttribute("id",moji_t+k);
+         
+        title_sum[k].setAttribute("href","#"+moji_t+k);
+
+    };
+
+// chara
+    let moji_c = "chara_index"
+
+    let chara_sum = document.getElementsByClassName("chara_sum");
+    let chara_list = document.getElementsByClassName("chara_list");
+
+
+    for(let k=0;k<=chara_sum.length-1;k++){
+        
+        chara_list[k].setAttribute("id",moji_c+k);
+         
+        chara_sum[k].setAttribute("href","#"+moji_c+k);
+
+    };
+// op
+    let moji_o = "op_index"
+
+    let op_sum = document.getElementsByClassName("op_sum");
+    let op_list = document.getElementsByClassName("op_list");
+
+
+    for(let k=0;k<=op_sum.length-1;k++){
+        
+        op_list[k].setAttribute("id",moji_o+k);
+         
+        op_sum[k].setAttribute("href","#"+moji_o+k);
+
+    };
+// ed
+    let moji_e = "ed_index"
+
+    let ed_sum = document.getElementsByClassName("ed_sum");
+    let ed_list = document.getElementsByClassName("ed_list");
+
+
+    for(let k=0;k<=ed_sum.length-1;k++){
+        
+        ed_list[k].setAttribute("id",moji_e+k);
+         
+        ed_sum[k].setAttribute("href","#"+moji_e+k);
+
+    };
+            
+};
+
+</script>
+
+<script src="https://starratingjs.netlify.app/index.js"></script>
+<script>
+
+//rating system
+var properties1=[
+    {% for t in title_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];
+var properties2=[
+    {% for t in chara_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];   
+var properties3=[
+    {% for t in op_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];    
+var properties4=[
+    {% for t in ed_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];             
+var className="ratingSystem1";
+var className="ratingSystem2";
+var className="ratingSystem3";
+var className="ratingSystem4";
+//execution
+rateSystem("ratingSystem1", properties1, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+rateSystem("ratingSystem2", properties2, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+rateSystem("ratingSystem3", properties3, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+rateSystem("ratingSystem4", properties4, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+
+</script>
+
+
+{% endblock %}

@@ -1,0 +1,1556 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load boost %}
+{% load filter %}
+
+{% block title %}{% if episode != 0 %}{% if title_tag != None %}{{title_tag}}{% endif %}{{short_name}}{{title_episode}}話のツイッター評価・感想まとめ|アニメぷらこめ{% elif episode == 0 %}{% if title_tag != None %}{{title_tag}}{% endif %}{{short_name}}のツイッター評価・感想まとめ|アニメぷらこめ{% endif %}{% endblock %}
+{% block head %}
+{% if episode == 0 %}
+<link rel="canonical" href="https://purakome.net/sentiment/anime/{{name}}/">
+{% else %}
+<link rel="canonical" href="https://purakome.net/sentiment/anime/{{name}}/{{title_episode}}/">
+{% endif %}
+<meta name="google-site-verification" content="fxQahsDO-SmE4lW4fF50S08UfSDe7_3O1K_jvy0JSzg"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:site" content="@LeiLingVei"/>
+{% if episode == 0 %}
+<meta property="og:url" content="https://purakome.net/sentiment/anime/{{name}}/"/>
+<meta property="og:title" content="{{short_name}}のツイッター評判調査 | ポジネガ探偵ぷらこめ"/>
+{% else %}
+<meta property="og:url" content="https://purakome.net/sentiment/anime/{{name}}/{{title_episode}}/"/>
+<meta property="og:title" content="{{short_name}}第{{title_episode}}のツイッター評判調査 | ポジネガ探偵ぷらこめ"/>
+{% endif %}
+<meta property="og:description" content="AIによるアニメ評判分析 そのアニメってポジティブ?ネガティブ? 人気キャラ,声優,炎上マップ..."/>
+<meta property="og:type" content="artcle"/>
+{% with address="https://purakome.net/static/image/wordcloud/result/anime/"|add:name %}
+{% with filename=address|add:'_wc.webp' %}
+<meta property="og:image" content="{{filename}}"/>
+{% endwith %}
+{% endwith %}
+{% endblock %}
+
+{% block header %}
+<div class="container p-3">
+    <h1 class="sampleh2">
+        
+        <span class="sub_titles" style="color:black;">
+        {% if past == True %}
+        (OA終了)
+        {% elif title_episode != 0 %}
+        第{{title_episode}}話 
+        {% endif %}
+        {{title_name}}{% if short_name not in title_name %}({{short_name}}){% endif %} | ツイッターのポジネガ評判まとめ</span>
+        
+    </h1>
+        <p class="period">(調査期間:{{period_start|date:"Y年n月j日"}}-{{period_end|date:"n月j日"}} {% if past == False %}対象ツイート:{{data_num}}件 {% endif %})
+        
+        {% if prevlink %}
+        <div style="font-size:1.4rem;text-align:left">
+          <a href="https://purakome.net/sentiment/anime/{{name}}/{{title_episode|add:'-1'}}/">&nbsp;&lt;&lt;第{{title_episode|add:"-1"}}話の評判を見る</a>
+        </div>
+        {% endif %}
+        </p>
+
+    
+</div>
+
+{% endblock %}
+
+{% block contents %}
+<div class="container">
+    <div class="row">
+                
+
+        <div class="col-lg-8" style="word-break: break-all; line-break: anywhere;">
+            {% if summarys %}
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:1rem;font-weight:bold;font-size:1.5rem;">今週のポジティブ(高評価/最高評価)な感想TOP20</h2>
+            <ol class="summary_top">
+              {% for summary in summarys %}
+              <li><h3 style="font-size:1.3rem;display: inline;"><a href="#" style="color:black;" class="sum_list_p">{{summary.要約|safe}}<font class="shinetext"> ({{summary.投稿数}} コメ)</font></a></h3></li>             
+              {% endfor %}              
+            </ol>
+            <p style="font-size:0.9rem;text-align:right;">(*同ユーザーによる複数回投稿やリツイート,スパムは除外しています)</p>
+ 
+           <h2 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">どうして評価が高い?</h2>
+           <table class="table table-sm">
+                <thead> 
+                    <tr>
+                        <th></th>
+                        <th class="th_fordesktop"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in summarys %}
+                    <tr>
+                        <td class="summary_p">
+                            <h3 class="summary_text">{{summary.要約|safe}}</h3>
+                            <p class="summary_num">({{summary.投稿数}}ツイート)</p>
+                        </td>
+                        <td class="related_tweet">
+        
+                             <ul class="title_list_p" style="list-style:none;">
+                             {% for item in summary.原文 %} 
+                             <li>
+                                 <table>   
+                                     <tr>
+                                         
+                                         <td class="tweet">
+                                           <div class="t_top">
+                                           
+                                             <div class="profile_wrap"> 
+                                               <a href="{{item.u_id}}" target="_blank" rel="nofollow">
+                                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}" alt="profile">
+                                               </a>
+                                             </div>
+                                            
+                                             <div class="username">
+                                               <p>
+                                                 <a href="{{item.u_id}}" target="_blank" rel="nofollow">
+                                                   {{item.u_name}}
+                                                 </a>
+                                               </p>
+                                               <a href="{{item.u_id}}" target="_blank" rel="nofollow">
+                                                 @{{item.s_name}}
+                                               </a>
+                                             </div>
+                                           </div>
+                                           
+                                           <span class="t_contents">
+                                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}} 
+                                               {% endwith %}
+                                               {% endwith %}                                           
+                                           </span>
+
+                                           <div class="t_bottom">                        
+                                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}" rel="nofollow"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}" rel="nofollow"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}" rel="nofollow"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                                               <a href="{{item.t_id}}" target="_blank" rel="nofollow">{{item.t_date}}</a>
+                                           </div>
+                                         </td>
+                                         <td style="vertical-align:top;">
+                                          
+                                             <img class="lazyload logo" data-src="{% static 'image/blue.png' %}" alt="logo">
+                                           
+                                         </td>
+                                         
+                                     </tr>
+                                 </table>
+                             </li>
+                             {% endfor %}
+                             </ul>                 
+                             <p class="summary_more"><a href="#" class="open-btn_p">もっと見る</a></p>
+                             <br>
+
+            
+                        </td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            {% if n_summarys %}
+            <h2 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">今週のネガティブ(低評価/最低評価)な感想TOP20</h2>
+            <ol class="summary_top">
+              {% for summary in n_summarys %}
+              <li><h3 style="font-size:1.3rem;display: inline;"><a href="#" style="color:black;" class="sum_list_n">{{summary.要約|safe}}<font style="font-size:1rem;font-weight:bold;color:red"> ({{summary.投稿数}} コメ)</font></a></h3></li>             
+              {% endfor %}              
+            </ol>            
+
+            <h2 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">どうして評価が低い?</h2>
+            <table class="table table-sm">
+                <thead> 
+                    <tr>
+                        <th></th>
+                        <th class="th_fordesktop"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in n_summarys %}
+                    <tr>
+                        <td class="summary_n">
+                            <h3 class="summary_text">{{summary.要約|safe}}</h3>
+                            <p class="summary_num">({{summary.投稿数}}ツイート)</p>
+                        </td>
+                        <td class="related_tweet">
+        
+                             <ul class="title_list_n" style="list-style:none;">
+                             {% for item in summary.原文 %} 
+                             <li>
+                                 <table>   
+                                     <tr>
+                                         
+                                         <td class="tweet">
+                                           <div class="t_top">
+                                           
+                                             <div class="profile_wrap"> 
+                                               <a href="{{item.u_id}}" target="_blank" rel="nofollow">
+                                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}" alt="profile">
+                                               </a>
+                                             </div>
+                                           
+                                             <div class="username">
+                                               <p>
+                                                 <a href="{{item.u_id}}" target="_blank" rel="nofollow">
+                                                   {{item.u_name}}
+                                                 </a>
+                                               </p>
+                                               <a href="{{item.u_id}}" target="_blank" rel="nofollow">
+                                                 @{{item.s_name}}
+                                               </a>
+                                             </div>
+                                           </div>
+                                           
+                                           <span class="t_contents">
+                                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}} 
+                                               {% endwith %}
+                                               {% endwith %}                                           
+
+                                           </span>
+
+                                           <div class="t_bottom">                        
+                                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}" rel="nofollow"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}" rel="nofollow"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}" rel="nofollow"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                                               <a href="{{item.t_id}}" target="_blank" rel="nofollow">{{item.t_date}}</a>
+                                           </div>
+                                         </td>
+                                         <td style="vertical-align:top;">
+                                         
+                                             <img class="lazyload logo" data-src="{% static 'image/blue.png' %}" alt="logo">
+                                        
+                                         </td>
+                                         
+                                     </tr>
+                                 </table>
+                             </li>
+                             {% endfor %}
+                             </ul>                 
+                             <p class="summary_more"><a href="#" class="open-btn_n">もっと見る</a></p>
+                             <br>
+
+            
+                        </td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+         
+            <br>
+            <h2 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">全ツイート一覧 計{{data_num}}件</h2>
+ 
+            <table class="table table-sm">
+           
+               <thead class="thead-light" id="th1">
+               <tr>
+                   <th></th>
+
+                   <th></th>
+                   <th></th>
+
+           
+               </tr>
+               </thead>
+           
+           
+               <tbody id="tb_p">
+
+                   {% for item in pn_data|slice:":10" %}
+                   <tr>
+                       {% if item.s_class == 3 %}
+                       <td><i class="far fa-smile-beam fa-2x img-fluid"></i><br>(高評価)</td>
+                       {% elif item.s_class == 4 %}
+                       <td><i class="far fa-laugh-squint fa-2x img-fluid"></i><br>(最高評価)</td>
+                       {% elif item.s_class == 0 %}
+                       <td><i class="far fa-tired fa-2x img-fluid"></i><br>(低評価)</td>
+                       {% else %}
+                       <td><i class="far fa-grin-beam-sweat fa-2x img-fluid"></i><br>(ちょっと低評価)</td>
+                       {% endif %}
+                     
+                       
+                       
+                       <td class="tweet">
+                           <div class="t_top">
+
+                              <div class="profile_wrap"> 
+                                <a href="{{item.u_id}}" target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}" alt="profile">
+                                </a>
+                              </div>
+
+                              <div class="username">
+                                <p>
+                                  <a href="{{item.u_id}}" target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href="{{item.u_id}}" target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>
+                           <span class="t_contents"> <!-- contents -->
+                                {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}} 
+                                {% endwith %}
+                                {% endwith %}                                           
+                           </span>
+    
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                               <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                           </div>
+                                     
+                       </td>
+                       
+
+                       <!-- tweet logo -->
+                       <td style="vertical-align:top;">
+
+                           <img class="lazyload logo" data-src="{% static 'image/blue.png' %}" alt="logo">
+
+                       </td>
+                       
+                   </tr>
+                   {% if forloop.counter == 20 %}
+                   
+                   <tr>
+                       <td></td>
+                       <td style="text-align: center"><a role="button" class="more_content" href="{% url 'detail_anime' name=name episode=episode %}?very_positive=on&positive=on" name="p_details">もっと見る</a></td>                      
+                   </tr>
+                   
+                   {% endif %}               
+                   {% endfor %}
+               </tbody>
+            </table>
+           <p class="p" style="font-size:0.6rem;text-align:right;">(*高精度AIを使用していますが判定に誤りが含まれる場合があります)</p>         
+
+
+        </div>
+    
+    
+        <div class="col-lg-4" style="word-break: break-all; line-break: anywhere;">
+<!--チャート群表示 -->
+
+    {% with arts=fanarts %}
+    {% if arts %}
+    <h2 style="border-left: 4px solid darkblue;margin-top:1rem;font-weight:bold;font-size:1.3rem;">{{short_name}}のイラスト&ファンアート</h2>
+<!-- Swiper -->
+    <div class="swiper mySwiper2" style="margin-top:1rem;height:200px;">
+      <div class="swiper-wrapper">
+            {% for item in arts %}            
+            {% if item %}
+        <div class="swiper-slide">
+            <div class="card h-100">
+              <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+                
+ 
+                      <div class="profile_wrap"> 
+                        <a href="{{item.u_id}}" target="_blank">
+                          <img class="lazyload trim-image-to-circle" style="width:75%;height:75%" data-src="{{item.p_image}}" alt="profile">
+                        </a>
+                      </div>
+ 
+                      <div class="username">
+                        <p>
+                          <a href="{{item.u_id}}" target="_blank">
+                            {{item.u_name|truncatechars:10}}
+                          </a>
+                        </p>
+                        <a href="{{item.u_id}}" target="_blank">
+                          @{{item.s_name|truncatechars:15}}
+                        </a>
+                      </div>          
+                    {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                    {{ item.media_url_truncated | urlize_media:media_urls | safe}} 
+                    {% endwith %}
+                 
+              </div>
+            <!-- card -->
+            </div>
+        <!--swiper-slide -->
+        </div>
+            {% endif %}
+            {% endfor %}
+      <!--swiper-wrapper -->
+      </div>
+    <!--mySwiper -->
+    </div>
+    {% endif %}
+    {% endwith %}
+
+
+<!--wordcloud -->
+            {% if episode == 0 %}
+            <div style="margin-top:4rem;"> 
+              <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:3rem;font-weight:bold;font-size:1.5rem;">
+                {{short_name}}のワードクラウド
+              </h2> 
+            {% with address="image/wordcloud/result/anime/"|add:name %}
+            {% with filename=address|add:'_wc.webp' %}
+            <img class="wordcloud img-fluid lazyload" data-src="{% static filename %}" alt="wordcloud">
+            {% endwith %}
+            {% endwith %}
+            </div>
+            {% endif %}
+<!--map -->
+            <hr>
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;font-weight:bold;font-size:1.5rem;">
+            {% if n_locations %}
+            {{short_name}}を高評価している地域TOP10
+            {% else %}
+            {{short_name}}についてよくツイートされている地域TOP10
+            {% endif %}
+            </h2>
+            <div id="chartdiv"  style="width:100%;height:300px;">
+            </div>
+            <p>
+            {% for loc in locations %}
+            {% if forloop.last %}
+              {{loc.0}}({{loc.1}})
+            {% elif loc.0 %}
+              {{loc.0}}({{loc.1}}),
+            {% endif %}
+            {% endfor %}
+            </p>              
+            
+            {% if n_locations %}
+            <hr>
+            <h2 style="font-weight:bold;font-size:1.5rem;">
+             {{short_name}}を低評価している地域TOP10
+            </h2>
+            <div id="chartdiv2" style="width:100%;height:300px;">
+            </div>
+            <p>
+            {% for loc in n_locations %}
+            {% if forloop.last %}
+              {{loc.0}}({{loc.1}})
+            {% elif loc.0 %}
+              {{loc.0}}({{loc.1}}),
+            {% endif %}
+            {% endfor %}
+            </p>              
+            {% endif %}
+
+      
+            <hr>
+
+            {% if freqs_obj %}
+            <div>
+                <h2 style="text-align: center; font-weight:bold; font-size:1.5rem;">
+                  {{short_name}}の頻出語
+                </h2>
+                <p style="font-size:1.4rem;">
+                {% with word=freqs_obj|slice:"0:50" %}
+                {% with count=freqs_obj|slice:"50:100" %}
+                {% for t, c in word|zip:count %}
+                    {% if t %}
+                      {% if forloop.last %}
+                        {% if c >= 10000 %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.8rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 1000 %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.6rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 100 %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.3rem;">{{t}}({{c}})</font></a>
+                        {% else %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1rem;">{{t}}({{c}})</font></a>
+                        {% endif %}
+                      {% else %}
+                        {% if c >= 10000 %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.8rem;">{{t}}({{c}})</font></a>                  
+                        {% elif c >= 1000 %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.6rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 100 %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.3rem;">{{t}}({{c}})</font></a>
+                        {% else %}
+                          <a href="{% url 'detail_anime' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1rem;">{{t}}({{c}})</font></a>                        
+                        {% endif %}
+                      {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {% endwith %}
+                {% endwith %}
+                </p>            
+            <hr>
+            </div>
+            {% endif %}
+
+            <div class="canvas-container-pie">  
+              <canvas id="myPieChart"></canvas>
+            </div>
+            <div style="text-align:right;">
+            <p style="font-weight:bold;">感情分析結果</p>
+            <p>最高評価の投稿数:{{p2_num}}</p>
+            <p>高評価の投稿数:{{p1_num}}</p>
+            <p>低評価の投稿数:{{n1_num}}</p>
+            <p>最低評価の投稿数:{{n2_num}}</p>
+            </div>
+
+            <hr>
+            <div class="canvas-container-bar">  
+            <canvas id="tweets_bydate"></canvas>
+            </div>
+            
+            <br>
+            
+            <div style="text-align:right;">
+            <caption style="font-weight:bold;">ポジティブ,ネガティブ投稿数の推移(日ごと)</caption> 
+            <table class="table table-sm table-bordered">
+            <tr>
+            <th>日付</th>
+            <th>最高評価/高評価の投稿数</th>
+            <th>最低評価/低評価の投稿数</th>
+            </tr>
+            <tr>
+            <td>{{pn_counts_date_text.0}}</td>
+            <td>{{p1_counts.0|add:p2_counts.0}}</td>
+            <td>{{n1_counts.0|add:n2_counts.0}}</td>
+            </tr>
+            <tr>
+            <td>{{pn_counts_date_text.1}}</td>
+            <td>{{p1_counts.1|add:p2_counts.1}}</td>
+            <td>{{n1_counts.1|add:n2_counts.1}}</td>
+            </tr>
+            <tr>
+            <td>{{pn_counts_date_text.2}}</td>
+            <td>{{p1_counts.2|add:p2_counts.2}}</td>
+            <td>{{n1_counts.2|add:n2_counts.2}}</td>
+            </tr>
+
+            <tr>
+            <td>{{pn_counts_date_text.3}}</td>
+            <td>{{p1_counts.3|add:p2_counts.3}}</td>
+            <td>{{n1_counts.3|add:n2_counts.3}}</td>
+            </tr>
+            <tr>
+            <td>{{pn_counts_date_text.4}}</td>
+            <td>{{p1_counts.4|add:p2_counts.4}}</td>
+            <td>{{n1_counts.4|add:n2_counts.4}}</td>
+            </tr>
+            <tr>
+            <td>{{pn_counts_date_text.5}}</td>
+            <td>{{p1_counts.5|add:p2_counts.5}}</td>
+            <td>{{n1_counts.5|add:n2_counts.5}}</td>
+            </tr>         
+                                                                                      
+            </table>
+
+            </div>
+
+            <br>
+            
+            {% if events %}
+            <div>
+            <h2 style="text-align: center; font-weight:bold; font-size:1.5rem;">
+              オンエア情報
+            </h2>
+            <table class="table table-hover newstable">
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                       
+                        <td>{{event.date_s|date:"Y年Md日"}}~
+                            {% if event.date_e|date:"Ymd" != "20231231" %}
+                            <br>
+                            {{event.date_e|date:"Y年Md日"}}
+                            {% endif %}
+                        </td>
+                        <td>{{event.weekday|default_if_none:""}}</td>
+                        <td>{{event.time_s|default_if_none:""}}~
+                            {% if event.time_e %}
+                            {{event.time_e}}
+                            {% endif %}
+                        </td>
+                        <td>{{event.channel}}</td>
+
+                    </tr>
+                    {% if forloop.counter == 5 %}
+                    <tr><td></td><td></td><td></td><td>その他</td></tr>
+                    {% endif %}
+                    
+                    {% endfor %}
+        
+                </tbody>
+            </table>
+            <p style="font-size:0.7rem;text-align:right;">(*時間等正確な情報の記載を心掛けておりますが誤りが含まれる場合もありますので、詳しくはアニメ公式サイト等をご確認ください)</p>
+            </div>
+            <br>
+            {% endif %}
+            {% if trend_obj %}
+              <div class="canvas-container-bar">  
+                <canvas id="trend_chart"></canvas>
+              </div>
+              <br>
+
+              <div>
+                <p>
+                {% with word=trend_obj|slice:"0:10" %}
+                {% with count=trend_obj|slice:"10:20" %}
+                {% for t, c in word|zip:count %}
+                    {% if t %}
+                      {% if forloop.last %}
+                        {{t}}({{c}})
+                      {% else %}
+                        {{t}}({{c}}),
+                      {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {% endwith %}
+                {% endwith %}
+                </p>
+              </div>
+            {% endif %}
+           
+            {% if about.story %}
+            <div>
+              <br>
+              <hr>
+              <h3 style="text-align: center; font-weight:bold; font-size:1.5rem;">
+                どんなアニメ?
+              </h3>       
+              <br>
+              <p style="font-size:1.1rem;">           
+                {{about.story}}
+              </p>
+            </div>
+            {% endif %}
+ 
+            <br>
+            <hr>
+            {% if chara_syokai %}
+            <!--キャラクター紹介-->
+            <div>
+            <h3 style="font-size:1.2rem;font-weight:bold;">主な登場キャラクター:</h3>
+            <p style="font-size:1.1rem;">
+            {% for i in chara_syokai %}
+                {% if forloop.last == False %}
+                {{i}},
+                {% else %}
+                {{i}}
+                {% endif %}
+            {% endfor %}
+            </p>
+            </div>
+            {% endif %}
+ 
+            {% if op_syokai %}
+            <!--キャラクター紹介-->
+            <div>
+            <h3 style="font-size:1.2rem;font-weight:bold;">オープニング曲:</h3>
+            <p style="font-size:1.1rem;">
+            {% for i in op_syokai %}
+                {% if forloop.last == False %}
+                {{i}},
+                {% else %}
+                {{i}}
+                {% endif %}
+            {% endfor %}
+            </p>
+            </div>
+            {% endif %}
+                        
+             {% if ed_syokai %}
+            <!--キャラクター紹介-->
+            <div>
+            <h3 style="font-size:1.2rem;font-weight:bold;">エンディング曲:</h3>
+            <p style="font-size:1.1rem;">
+            {% for i in ed_syokai %}
+                {% if forloop.last == False %}
+                {{i}},
+                {% else %}
+                {{i}}
+                {% endif %}
+            {% endfor %}
+            </p>
+            </div>
+            {% endif %}
+
+             {% if cv_syokai %}
+            <!--キャラクター紹介-->
+            <div>
+            <h3 style="font-size:1.2rem;font-weight:bold;">声優情報:</h3>
+            <p style="font-size:1.1rem;">
+            {% for i in cv_syokai %}
+                {% if forloop.last == False %}
+                {{i}},
+                {% else %}
+                {{i}}
+                {% endif %}
+            {% endfor %}
+            </p>
+            </div>
+            {% endif %}
+
+            {% if oadates %}
+            <!--episode紹介-->
+            <div>
+            <h3  style="font-size:1.2rem;font-weight:bold;">あらすじ:</h3>
+            {% for i in oadates %}
+            {% if i.episode and i.episode_title %}
+              {% if i.link_exist %}
+                <a href="{% url 'anime_episode' name=name episode=forloop.counter %}"><p>第{{forloop.counter}}話({{i.episode|date:"Y年n月j日放送"}}):{{i.episode_title}}</p></a>
+              {% else %}
+                <p style="font-size:1.1rem;">第{{forloop.counter}}話({{i.episode|date:"Y年n月j日放送"}}):{{i.episode_title}}</p>
+              {% endif %}
+            {% endif %}
+            {% endfor %}
+            
+            </div>
+            {% endif %}
+
+
+            {% if about.p_soukatsu %}
+            <div>
+              <br>
+              <hr>
+              <h2 style="text-align: center; font-weight:bold; font-size:1.2rem;">
+              【高評価のツイート総括と人気理由】
+              </h2>       
+              <p style="font-size:1.1rem;">           
+                {{about.p_soukatsu | linebreaks}}
+              </p>
+            </div>
+            {% endif %}
+            {% if about.n_soukatsu %}
+            <div>
+              <h2 style="text-align: center; font-weight:bold; font-size:1.2rem;">
+              【低評価のツイート総括と要望・改善点】
+              </h2>       
+              <p style="font-size:1.1rem;">           
+                {{about.n_soukatsu | linebreaks}}
+              </p>
+            </div>
+            {% endif %}
+
+
+            <!-- アニメ内のキャラクターランキング -->
+            <!-- tableで表示する場合 -->
+            {% if chara_rank %}
+            <br>
+            <hr>
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:3rem;font-weight:bold;font-size:1.5rem;">人気キャラクターランキング</h2> 
+
+            <table class="table">
+
+                {% for t in chara_rank %}
+              <tr>
+                  <td style="display:block;">
+                    <h3 style="font-size:1.4rem;font-weight:bold;text-align:center;">{{forloop.counter}}位:{{t.brand}}</h3>
+                  <div style="max-width:55%; margin:0 auto;">
+                        {% with address="image/wordcloud/result/character/"|add:t.url %}
+                        {% with filename=address|add:'_wc.webp' %}
+                        <img class="lazyload img-fluid" data-src="{% static filename %}" alt={{t.brand}}>
+                        {% endwith %}
+                        {% endwith %}
+                        
+                  </div>
+                   <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+
+                    {% if t.summarys.0 != None %}
+                    <ol class="popular_reason"><h4 class="popular_reason_title">ポジティブな評判上位ピックアップ</h4>
+                        {% for sum in t.summarys %}
+                        {% if sum != None %}
+                        <li class="popular_reason1">{{sum | safe}}</li>
+                        {% else %}
+                        {% endif %}
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+
+                  </td>    
+
+
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+
+    <!-- アニメ内のopランキング -->
+            <!-- tableで表示する場合 -->
+            {% if op_rank %}
+            <br>
+            <hr>
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:3rem;font-weight:bold;font-size:1.5rem;">OP曲評判まとめ</h2> 
+
+            <table class="table">
+
+                {% for t in op_rank %}
+              <tr>
+                  <td style="display:block;">
+                    <h3 style="font-size:1.4rem;font-weight:bold;text-align:center;">{{forloop.counter}}位:{{t.brand}}</h3>
+                  <div style="max-width:55%; margin:0 auto;">
+                        {% with address="image/wordcloud/result/op/"|add:t.url %}
+                        {% with filename=address|add:'_wc.webp' %}
+                        <img class="lazyload img-fluid" data-src="{% static filename %}" alt={{t.brand}}>
+                        {% endwith %}
+                        {% endwith %}
+                        
+                  </div>
+                <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+
+                    {% if t.summarys.0 != None %}
+                    <ol class="popular_reason"><h4 class="popular_reason_title">ポジティブな評判上位ピックアップ</h4>
+                        {% for sum in t.summarys %}
+                        {% if sum != None %}
+                        <li class="popular_reason1">{{sum | safe}}</li>
+                        {% else %}
+                        {% endif %}
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+
+                  </td>    
+
+
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+
+    <!-- アニメ内のedランキング -->
+            <!-- tableで表示する場合 -->
+            {% if ed_rank %}
+            <br>
+            <hr>
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:3rem;font-weight:bold;font-size:1.5rem;">ED曲評判まとめ</h2> 
+
+            <table class="table">
+
+                {% for t in ed_rank %}
+              <tr>
+                  <td style="display:block;">
+                    <h3 style="font-size:1.4rem;font-weight:bold;text-align:center;">{{forloop.counter}}位:{{t.brand}}</h3>
+                  <div style="max-width:55%; margin:0 auto;">
+                        {% with address="image/wordcloud/result/ed/"|add:t.url %}
+                        {% with filename=address|add:'_wc.webp' %}
+                        <img class="lazyload img-fluid" data-src="{% static filename %}" alt={{t.brand}}>
+                        {% endwith %}
+                        {% endwith %}
+                        
+                  </div>
+                 <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+
+                    {% if t.summarys.0 != None %}
+                    <ol class="popular_reason"><h4 class="popular_reason_title">ポジティブな評判上位ピックアップ</h4>
+                        {% for sum in t.summarys %}
+                        {% if sum != None %}
+                        <li class="popular_reason1">{{sum | safe}}</li>
+                        {% else %}
+                        {% endif %}
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+
+                  </td>    
+
+
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+            
+        
+            {% if cv_rank %}
+            <br>
+            <hr>
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:3rem;font-weight:bold;font-size:1.5rem;">{{name}} 人気声優ランキング</h2> 
+
+            <table class="table">
+
+                {% for t in cv_rank %}
+              <tr>
+                  <td style="display:block;">
+                    <h3 style="font-size:1.4rem;font-weight:bold;text-align:center;">{{forloop.counter}}位:{{t.brand}}</h3>
+                  <div style="max-width:55%; margin:0 auto;">
+                        {% with address="image/wordcloud/result/cv/"|add:t.url %}
+                        {% with filename=address|add:'_wc.webp' %}
+                        <img class="lazyload img-fluid" data-src="{% static filename %}" alt={{t.brand}}>
+                        {% endwith %}
+                        {% endwith %}
+                        
+                  </div>
+                  <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+
+                    {% if t.summarys.0 != None %}
+                    <ol class="popular_reason"><h4 class="popular_reason_title">ポジティブな評判上位ピックアップ</h4>
+                        {% for sum in t.summarys %}
+                        {% if sum != None %}
+                        <li class="popular_reason1">{{sum | safe}}</li>
+                        {% else %}
+                        {% endif %}
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+
+                  </td>    
+
+
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+
+           <!-- 類似アニメ -->
+                           
+
+            <!-- tableで表示する場合 -->
+            {% if relates %}
+            <br>
+            <hr>
+            <h2 style="padding: 1rem 1rem;border-left: 4px solid darkblue;margin-top:3rem;font-weight:bold;font-size:1.5rem;">{{short_name}}に類似したアニメ</h2> 
+            <p style="font-size:0.7rem;text-align:right;">(*感想やリアクションの類似度を元に算出)</p>
+            <table class="table">
+
+                {% for t in relates %}
+              <tr>
+                  <td style="display:block;">
+                    <h3 style="font-size:1.4rem;font-weight:bold;text-align:center;">{{forloop.counter}}位:{{t.brand}}</h3>
+
+                  <div style="max-width:55%; margin:0 auto;">
+                        <a href="{% url 'anime' t.url %}">
+                        {% with address="image/wordcloud/result/anime/"|add:t.url %}
+                        {% with filename=address|add:'_wc.webp' %}
+                        <img class="lazyload img-fluid" data-src="{% static filename %}" alt={{t.brand}}>
+                        {% endwith %}
+                        {% endwith %}
+                        </a>
+                  </div>
+                  <p style="text-align:right;">ポジティブな投稿数:{{t.pcount}}</p>  
+
+                    <ol class="popular_reason"><h4 class="popular_reason_title">ポジティブな評判TOP5</h4>
+                        {% for sum in t.summarys %}
+                        {% if sum %}
+                        <li class="popular_reason1">{{sum | safe}}</li>
+                        {% else %}
+                        {% endif %}
+                        {% endfor %}
+                    </ol>
+
+                  </td>    
+
+
+                </tr>
+                {% endfor %}
+            </table>
+            {% endif %}
+
+
+      <div style="font-size:1.4rem;margin-bottom:3rem;text-align:center;">
+      {% load social_share %}
+      {% post_to_twitter "{{short_name}}-ポジネガ探偵ぷらこめ" object_or_url "<i class='fab fa-twitter-square'></i>ツイッターで共有してね" %}
+      {% post_to_facebook object_or_url "<i class='fab fa-facebook-square'></i>Facebookで共有してね" %}
+      </div>
+<!--ブログランキング-->
+        <div style="text-align: right;">
+        <a href="https://blog.with2.net/link/?id=2092688&cid=1137" title="アニメランキング"><img width="110" height="31" src="https://blog.with2.net/img/banner/c/banner_1/br_c_1137_1.gif"></a><br><a href="https://blog.with2.net/link/?id=2092688&cid=1137" title="アニメランキング" style="font-size: 0.9em;">アニメランキング</a>
+        <a href="https://animation.blogmura.com/anime_review/ranking/in?p_cid=11151659" target="_blank"><img src="https://b.blogmura.com/animation/anime_review/88_31.gif" width="88" height="31" border="0" alt="にほんブログ村 アニメブログ アニメ感想へ" /></a><br /><a href="https://animation.blogmura.com/anime_review/ranking/in?p_cid=11151659" target="_blank">にほんブログ村</a></div>
+
+
+<!-- コメント -->    
+        <div style="margin-top:5rem;margin-bottom:3rem;">
+        <hr>
+        <h3 style="font-weight:bold;">{{short_name}}{% if title_episode != 0 %}{{title_episode}}話{% endif %}についてコメントする</h3>
+        <form method="post" action="">
+            {% csrf_token %}
+            {{ comment_form.as_p }}
+            <button type="submit" class="btn btn-info">送信</button>
+        </form>
+    
+        {% with comments.count as total_comments %}
+            <h4 class="mt-5" style="font-weight:bold;">
+                {{ total_comments }} コメント
+            </h4>
+        {% endwith %}
+        {% if not comments %}
+            まだコメントはありません
+        
+        {% else %}
+            {% for comment in comments %}
+                {% if comment.parent == Null %}
+                {% include 'sentiment/anime/comment.html' with comment=comment %}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+        </div>
+
+        <!-- col-lg-4-->
+        </div>
+    
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+<!-- swiper カルーセル -->
+<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+
+    <!--chart js-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
+
+<!-- Resources -->
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="https://www.amcharts.com/lib/5/geodata/japanLow.js"></script>
+
+<script>
+    // pieラベル名＋%表示させる
+    var dataLabelPlugin = {
+        afterDatasetsDraw: function (chart, easing) {
+            // To only draw at the end of animation, check for easing === 1
+            var ctx = chart.ctx;
+
+            chart.data.datasets.forEach(function (dataset, i) {
+                var dataSum = 0;
+                dataset.data.forEach(function (element){
+                    dataSum += element;
+                });
+
+                var meta = chart.getDatasetMeta(i);
+                if (!meta.hidden) {
+                    meta.data.forEach(function (element, index) {
+                        // Draw the text in black, with the specified font
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+
+                        var fontSize = 12;
+                        var fontStyle = 'normal';
+                        var fontFamily = 'Helvetica Neue';
+                        ctx.font = Chart.helpers.fontString(fontSize, fontStyle, fontFamily);
+
+                        // Just naively convert to string for now
+                        //var labelString = chart.data.labels[index];
+                        var dataString = Math.round((dataset.data[index] / dataSum) * 100).toString() + "%";
+
+                        // Make sure alignment settings are correct
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        var padding = 5;
+                        var position = element.tooltipPosition();
+                        //ctx.fillText(labelString, position.x, position.y - (fontSize / 2) - padding);
+                        ctx.fillText(dataString, position.x, position.y + (fontSize / 2) - padding);
+                    });
+                }
+            });
+        }
+    };    
+    //=========== ポジネガ円グラフ ============//
+      
+    var pie_ctx = document.getElementById('myPieChart');
+
+    var pie_chart = new Chart(pie_ctx,{
+    type:'pie',//グラフのタイプ
+    
+    data:{
+            datasets: [{
+                data: [{{p2_counts.0}}+{{p2_counts.1}}+{{p2_counts.2}}+{{p2_counts.3}}+{{p2_counts.4}}+{{p2_counts.5}},
+                       {{p1_counts.0}}+{{p1_counts.1}}+{{p1_counts.2}}+{{p1_counts.3}}+{{p1_counts.4}}+{{p1_counts.5}},
+                       {{n1_counts.0}}+{{n1_counts.1}}+{{n1_counts.2}}+{{n1_counts.3}}+{{n1_counts.4}}+{{n1_counts.5}},
+                       {{n2_counts.0}}+{{n2_counts.1}}+{{n2_counts.2}}+{{n2_counts.3}}+{{n2_counts.4}}+{{n2_counts.5}}
+                       ],
+                       
+                backgroundColor: ['#1E90FF','#00BFFF','#E9967A','#DB7093']
+            }],
+    
+            // These labels appear in the legend and in the tooltips when hovering different arcs
+            labels: [
+                '最高評価',
+                '高評価',
+                '低評価',
+                '最低評価'
+            ]
+    },
+   
+    options:{//グラフのオプション
+      //maintainAspectRatio: false,//CSSで大きさを調整するため、自動縮小をさせない
+      maintainAspectRatio: false,
+      responsive: true,
+
+      legend:{
+        display: true,
+      },
+      title:{//上部タイトル表示の設定
+        display: true,
+        fontSize:17,
+        text: '1週間のポジティブ/ネガティブ投稿割合',
+      },
+
+    
+    },
+    plugins: [dataLabelPlugin], // パーセント表示させるプラグイン https://beiznotes.org/show-percentage-on-chart-js/
+
+    });
+      
+
+
+    // -----------ツイート数折れ線グラフ------------
+    const tweet_point = JSON.parse('{{pn_counts_date|safe}}');
+                
+     // 折れ線グラフ表示
+      var tweets_ctx = document.getElementById('tweets_bydate').getContext('2d');
+      var tweets_chart = new Chart(tweets_ctx, {
+          type: 'line',
+      
+          // データを指定
+          data: {      
+                labels: [tweet_point[0],tweet_point[1],tweet_point[2],tweet_point[3],tweet_point[4],tweet_point[5]],
+     
+              datasets: [{
+                  label: '高評価/最高評価',
+                  borderColor: 'rgb(75, 192, 192)',
+                  lineTension: 0, //折れ線
+                  fill: false,
+                  data: [{{p1_counts.0}}, {{p1_counts.1}}, {{p1_counts.2}}, {{p1_counts.3}}, {{p1_counts.4}}, {{p1_counts.5}}]
+     
+              },{
+                  label: '低評価/最低評価',
+                  borderColor: 'red',
+                  fill: false,
+                  lineTension: 0, //折れ線
+                  data: [{{n1_counts.0}}, {{n1_counts.1}}, {{n1_counts.2}}, {{n1_counts.3}}, {{n1_counts.4}}, {{n1_counts.5}}]
+     
+              }
+              ]
+          },
+      
+          // 設定はoptionsに記述
+          options: {
+              maintainAspectRatio: false,
+              responsive: true,          
+            //タイトル
+            title: {
+              display: true,
+              fontSize:17,
+              text: '1週間のポジティブ/ネガティブ投稿数の推移'
+            },
+            legend:{
+              display:true,//グラフの説明を表示
+            },
+            scales: {
+              yAxes: [
+                {
+                scaleLabel: {
+                  display: true,                // 表示設定
+                  labelString: 'Tweets',    // ラベル'Tweets'
+                }
+                }
+              ]
+            },
+            tooltips: {
+                mode: 'nearest',
+                intersect: false,
+            }
+          }
+     }); 
+      
+</script>
+<script>
+
+
+// もっと読むボタン
+window.onload = function() {
+  //複数のdiv要素に動的なidをつける
+    let moji_p = "list_positive"
+    let moji2_p = "btn_positive"
+    let moji21_p = "sum_list_positive"    // sum_list用
+    let moji3_p = "sum_positive"
+    let title_list_p = document.getElementsByClassName("title_list_p");
+    let btn_p = document.getElementsByClassName("open-btn_p");
+    let sum_list_p = document.getElementsByClassName("sum_list_p"); // sum_list用
+    let sum_p = document.getElementsByClassName("summary_p");
+
+    for (let j=0;j<=sum_p.length-1;j++){
+        //各要約にid追加
+        sum_p[j].setAttribute("id",moji3_p+j);
+    }
+    for(let k=0;k<=title_list_p.length-1;k++){
+        //各要約の投稿,buttonにid追加
+        title_list_p[k].setAttribute("id",moji_p+k);
+        btn_p[k].setAttribute("id",moji2_p+k);
+        
+        sum_list_p[k].setAttribute("id",moji21_p+k); // sum_list
+         
+        let hide_p = document.getElementById(moji_p+k).children;
+          
+        let hideList_p = [];
+        for (let i = 3; i < hide_p.length; i++) {
+          hideList_p.push(hide_p[i]);
+          hide_p[i].style.display='none';
+        }
+    
+        let openbtn_p = btn_p[k];
+        openbtn_p.setAttribute("href","#"+moji3_p+k);// summary[k]に飛ぶようにする
+        let sumlistp = sum_list_p[k];
+        sumlistp.setAttribute("href","#"+moji3_p+k);// summary[k]に飛ぶようにする
+
+      
+        openbtn_p.addEventListener('click', function(){
+            if (hideList_p[0].style.display == 'none') {
+              for (let i = 0; i < hideList_p.length; i++) {
+                hideList_p[i].style.display = 'block';
+              }
+              openbtn_p.textContent=('閉じる');
+            } else {
+              for (let i = 0; i < hideList_p.length; i++) {
+                hideList_p[i].style.display = 'none';
+              }　　     
+    
+              openbtn_p.textContent=('もっと見る');
+            }
+            return false;
+        });  
+    
+        let num_p = hide_p.length;
+        if (num_p <= 3) {
+          openbtn_p.hidden = true;
+        };
+    };
+
+// ネガティブ要約も同様
+    let moji_n = "list_negative"
+    let moji2_n = "btn_negative"
+    let moji21_n = "sum_list_negative"    // sum_list用    
+    let moji3_n = "sum_negative"
+    let title_list_n = document.getElementsByClassName("title_list_n");
+    let btn_n = document.getElementsByClassName("open-btn_n");
+    let sum_list_n = document.getElementsByClassName("sum_list_n"); // sum_list用    
+    let sum_n = document.getElementsByClassName("summary_n");
+    
+
+    for (let j=0;j<=sum_n.length-1;j++){
+        //各要約にid追加
+        sum_n[j].setAttribute("id",moji3_n+j);
+    }
+    for(let k=0;k<=title_list_n.length-1;k++){
+        //各要約の投稿,buttonにid追加
+        title_list_n[k].setAttribute("id",moji_n+k);
+        btn_n[k].setAttribute("id",moji2_n+k);
+        
+        sum_list_n[k].setAttribute("id",moji21_n+k); // sum_list
+                
+        let hide_n = document.getElementById(moji_n+k).children;
+          
+        let hideList_n = [];
+        for (let i = 3; i < hide_n.length; i++) {
+          hideList_n.push(hide_n[i]);
+          hide_n[i].style.display='none';
+        }
+    
+        let openbtn_n = btn_n[k];
+        openbtn_n.setAttribute("href","#"+moji3_n+k);// summary[k]に飛ぶようにする
+        let sumlistn = sum_list_n[k];
+        sumlistn.setAttribute("href","#"+moji3_n+k);// summary[k]に飛ぶようにする
+              
+        openbtn_n.addEventListener('click', function(){
+            if (hideList_n[0].style.display == 'none') {
+              for (let i = 0; i < hideList_n.length; i++) {
+                hideList_n[i].style.display = 'block';
+              }
+              openbtn_n.textContent=('閉じる');
+            } else {
+              for (let i = 0; i < hideList_n.length; i++) {
+                hideList_n[i].style.display = 'none';
+              }　　     
+    
+              openbtn_n.textContent=('もっと見る');
+            }
+            return false;
+        });  
+    
+        let num_n = hide_n.length;
+        if (num_n <= 3) {
+          openbtn_n.hidden = true;
+        };
+    };
+};
+</script>
+<!-- Initialize Swiper -->
+<script>
+  var swiper = new Swiper(".mySwiper", {
+    slidesPerView: 2,
+    spaceBetween: 10,
+    freeMode: true,
+    autoplay: {
+      delay: 5500,
+      disableOnInteraction: false,
+    },
+    breakpoints: {
+      640: {
+        slidesPerView: 2,
+        spaceBetween: 20,
+      },
+      768: {
+        slidesPerView: 4,
+        spaceBetween: 20,
+      },
+      1024: {
+        slidesPerView: 6,
+        spaceBetween: 20,
+      },
+    },        
+  });
+</script>
+    <script>
+      var swiper = new Swiper(".mySwiper2", {
+        slidesPerView: 3,
+        spaceBetween: 30,
+        autoplay: {
+          delay: 5500,
+          disableOnInteraction: false,
+        },
+      });
+    </script>
+
+<script>
+// 404画像エラー用
+
+const images = document.querySelectorAll('.trim-image-to-circle');
+images.forEach((image) => {
+　image.addEventListener('error',() => {
+　　image.setAttribute('src', '{% static "image/wordcloud/blank.png" %}');
+　});
+});
+</script>
+
+
+<!-- map -->
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+<script src="https://www.amcharts.com/lib/5/geodata/japanLow.js"></script>
+<!-- Chart code -->
+<script>
+am5.ready(function() {
+
+var data = [
+
+
+{'id':'JP-{{locations_map.0.0}}','name':'','value':{{locations_map.0.1}},},
+
+{'id':'JP-{{locations_map.1.0}}','name':'','value':{{locations_map.1.1}},},
+{'id':'JP-{{locations_map.2.0}}','name':'','value':{{locations_map.2.1}},},
+{'id':'JP-{{locations_map.3.0}}','name':'','value':{{locations_map.3.1}},},
+{'id':'JP-{{locations_map.4.0}}','name':'','value':{{locations_map.4.1}},},
+{'id':'JP-{{locations_map.5.0}}','name':'','value':{{locations_map.5.1}},},
+{'id':'JP-{{locations_map.6.0}}','name':'','value':{{locations_map.6.1}},},
+{'id':'JP-{{locations_map.7.0}}','name':'','value':{{locations_map.7.1}},},
+{'id':'JP-{{locations_map.8.0}}','name':'','value':{{locations_map.8.1}},},
+{'id':'JP-{{locations_map.9.0}}','name':'','value':{{locations_map.9.1}},},
+
+
+];
+
+
+var root = am5.Root.new("chartdiv");
+root.setThemes([am5themes_Animated.new(root)]);
+
+var chart = root.container.children.push(am5map.MapChart.new(root, {}));
+
+var polygonSeries = chart.series.push(
+  am5map.MapPolygonSeries.new(root, {
+    geoJSON: am5geodata_japanLow,
+
+  })
+);
+
+var bubbleSeries = chart.series.push(
+  am5map.MapPointSeries.new(root, {
+    valueField: "value",
+    calculateAggregates: true,
+    polygonIdField: "id"
+  })
+);
+
+var circleTemplate = am5.Template.new({});
+
+bubbleSeries.bullets.push(function(root, series, dataItem) {
+  var container = am5.Container.new(root, {});
+
+  var circle = container.children.push(
+    am5.Circle.new(root, {
+      radius: 20,
+      fillOpacity: 0.7,
+      fill: am5.color(0x00FF00),
+      cursorOverStyle: "pointer",
+      tooltipText: `{name}: [bold]{value}[/]`
+    }, circleTemplate)
+  );
+
+  var countryLabel = container.children.push(
+    am5.Label.new(root, {
+      text: "{name}",
+      paddingLeft: 5,
+      populateText: true,
+      fontWeight: "bold",
+      fontSize: 13,
+      centerY: am5.p50
+    })
+  );
+
+  circle.on("radius", function(radius) {
+    countryLabel.set("x", radius);
+  })
+
+  return am5.Bullet.new(root, {
+    sprite: container,
+    dynamic: true
+  });
+});
+
+bubbleSeries.bullets.push(function(root, series, dataItem) {
+  return am5.Bullet.new(root, {
+    sprite: am5.Label.new(root, {
+      text: "{value.formatNumber('#.')}",
+      fill: am5.color(0xffffff),
+      populateText: true,
+      centerX: am5.p50,
+      centerY: am5.p50,
+      textAlign: "center"
+    }),
+    dynamic: true
+  });
+});
+
+
+
+// minValue and maxValue must be set for the animations to work
+bubbleSeries.set("heatRules", [
+  {
+    target: circleTemplate,
+    dataField: "value",
+    min: 10,
+    max: 20,
+    minValue: 0,
+    maxValue: 1000, // 上げるほど相対的にvalue円が小さくなる
+    key: "radius"
+  }
+]);
+
+bubbleSeries.data.setAll(data);
+
+{% if n_locations_map %}
+//炎上マップ
+
+
+var data2 = [
+
+{'id':'JP-{{n_locations_map.0.0}}','name':'','value':{{n_locations_map.0.1}},},
+
+{'id':'JP-{{n_locations_map.1.0}}','name':'','value':{{n_locations_map.1.1}},},
+{'id':'JP-{{n_locations_map.2.0}}','name':'','value':{{n_locations_map.2.1}},},
+{'id':'JP-{{n_locations_map.3.0}}','name':'','value':{{n_locations_map.3.1}},},
+{'id':'JP-{{n_locations_map.4.0}}','name':'','value':{{n_locations_map.4.1}},},
+{'id':'JP-{{n_locations_map.5.0}}','name':'','value':{{n_locations_map.5.1}},},
+{'id':'JP-{{n_locations_map.6.0}}','name':'','value':{{n_locations_map.6.1}},},
+{'id':'JP-{{n_locations_map.7.0}}','name':'','value':{{n_locations_map.7.1}},},
+{'id':'JP-{{n_locations_map.8.0}}','name':'','value':{{n_locations_map.8.1}},},
+{'id':'JP-{{n_locations_map.9.0}}','name':'','value':{{n_locations_map.9.1}},},
+
+];
+
+
+var root2 = am5.Root.new("chartdiv2");
+root2.setThemes([am5themes_Animated.new(root2)]);
+
+var chart2 = root2.container.children.push(am5map.MapChart.new(root2, {}));
+
+var polygonSeries2 = chart2.series.push(
+  am5map.MapPolygonSeries.new(root2, {
+    geoJSON: am5geodata_japanLow,
+
+  })
+);
+
+var bubbleSeries2 = chart2.series.push(
+  am5map.MapPointSeries.new(root2, {
+    valueField: "value",
+    calculateAggregates: true,
+    polygonIdField: "id"
+  })
+);
+
+var circleTemplate2 = am5.Template.new({});
+
+bubbleSeries2.bullets.push(function(root2, series, dataItem) {
+  var container2 = am5.Container.new(root2, {});
+
+  var circle2 = container2.children.push(
+    am5.Circle.new(root2, {
+      radius: 20,
+      fillOpacity: 0.7,
+      fill: am5.color(0xff0000),
+      cursorOverStyle: "pointer",
+      tooltipText: `{name}: [bold]{value}[/]`
+    }, circleTemplate2)
+  );
+
+  var countryLabel2 = container2.children.push(
+    am5.Label.new(root2, {
+      text: "{name}",
+      paddingLeft: 5,
+      populateText: true,
+      fontWeight: "bold",
+      fontSize: 13,
+      centerY: am5.p50
+    })
+  );
+
+  circle2.on("radius", function(radius) {
+    countryLabel2.set("x", radius);
+  })
+
+  return am5.Bullet.new(root2, {
+    sprite: container2,
+    dynamic: true
+  });
+});
+
+bubbleSeries2.bullets.push(function(root2, series, dataItem) {
+  return am5.Bullet.new(root2, {
+    sprite: am5.Label.new(root2, {
+      text: "{value.formatNumber('#.')}",
+      fill: am5.color(0xffffff),
+      populateText: true,
+      centerX: am5.p50,
+      centerY: am5.p50,
+      textAlign: "center"
+    }),
+    dynamic: true
+  });
+});
+
+
+
+// minValue and maxValue must be set for the animations to work
+bubbleSeries2.set("heatRules", [
+  {
+    target: circleTemplate2,
+    dataField: "value",
+    min: 10,
+    max: 20,
+    minValue: 0,
+    maxValue: 1000, // 上げるほど相対的にvalue円が小さくなる
+    key: "radius"
+  }
+]);
+
+bubbleSeries2.data.setAll(data2);
+{% endif %} // if 炎上map
+
+
+}); // end am5.ready()
+</script>
+
+{% endblock %}

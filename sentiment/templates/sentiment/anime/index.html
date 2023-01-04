@@ -1,0 +1,408 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+
+{% block title %}アニメ漫画のAI満足度調査・おすすめランキング|ツイッター評価・感想分析ぷらこめ{% endblock %}
+
+{% block head %}
+<meta name="google-site-verification" content="fxQahsDO-SmE4lW4fF50S08UfSDe7_3O1K_jvy0JSzg"/>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5112565126786179"
+     crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block contents %}
+
+
+
+<div class="container">
+
+    <h1 style="margin-top:3rem;text-align:center;">アニメ・漫画のAI満足度調査</h1>
+
+    <div class="row justify-content-md-center" style="margin-top:3rem;margin-bottom:3rem;">
+    <h2 style="font-size:1.5rem; text-align:center;">ポジネガ評価・感想を調べたいアニメ名やキーワードを入力してね!</h2>
+    <form class="col-8 col-md-4" action="{% url 'search' %}" method="get">
+
+        <div class="input-group">
+            <input type="search" required="required" style="height:40px;" placeholder="タイトル,キャラクター名" name="q" id="form1" class="form-control" />
+            <button type="submit" class="btn btn-dark">
+              <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </form>
+    </div>
+<hr>
+<h2 style="text-align:center;margin-top:3rem;margin-bottom:3rem;font-size:1.7rem;font-weight:bold;">【最新調査結果ピックアップ】</h2>
+
+<div class="row" style="display:flex;">
+{% for d in latest_l %}
+
+    <div class="col-sm-3">
+        <div class="card text-center">
+          <div class="card-body">
+            <h3 class="card-title" style="font-size:1.7rem">{{d.title}}</h3>
+            <hr>
+            {% with address="image/wordcloud/result/anime/"|add:d.url %}
+            {% with filename=address|add:'_wc.webp' %}
+            <a href="{{d.link}}">
+            <img class="lazyload" style="width:200px;height:200px;" data-src="{% static filename %}" alt="wordcloud">
+            </a>
+            {% endwith %}
+            {% endwith %}
+            <p class="card-text" style="font-size:1.4rem">{{d.description|safe}}</p>
+            <a href="{{d.link}}" class="btn btn-primary"><font style="font-size:1.3rem">もっと見る</font></a>
+          </div>
+          <div class="card-footer text-muted" style="font-size:1.3rem">
+            更新：{{d.pubdate}}
+          </div>
+        </div>
+        <br>
+    </div>
+    
+{% endfor %}
+</div>
+
+<h2 class="site_title" >【2022アニメ満足度ランキング】</h2>
+  <div class="swiper mySwiper">
+      <div class="swiper-wrapper">
+        {% for t in title_rank %}
+        <div class="swiper-slide">
+
+            <div class="card h-50 w-100">
+              <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+              <h3 class="card-title">{{forloop.counter}}位:{{t.brand}}【第{{t.episode}}話】</h3>
+              <div> <div class="starRatingContainer" style="margin: auto;"> <div class="ratingSystem1"> </div> </div>  <div class="ratingHolder"> </div> </div>
+              <div style="font-size:1.4rem;font-weight:lighter;text-align:center;">(高評価率:{{t.満足度|floatformat:1}}%)</div>
+              
+                <div style="display:flex;width:100px;">
+                {% with address="image/wordcloud/result/anime/"|add:t.url %}
+                {% with filename=address|add:'_wc.webp' %}
+                <a href="{% url 'anime_episode' name=t.url episode=t.episode %}">
+                <img class="lazyload" style="width:200px;height:150px;" data-src="{% static filename %}" alt="{{t.title}}">
+                </a>
+                {% endwith %}
+                {% endwith %}
+                    <canvas class="pie_title" id="PieChart_index">
+                        <span style="display:none">{{t.p2count}},{{t.p1count}},{{t.n1count}},{{t.n2count}}</span>
+                    </canvas>
+                </div>
+              </div>
+              <div class="card-body" style="font-family:'Noto Sans JP';">
+                <p class="card-text">ポジティブな投稿数:{{t.pcount}}</p>
+                <hr>
+                <ol class="card-text popular_reason"><span class="popular_reason_title marker">今週のポジティブ感想上位</span><br>
+                    {% if t.summarys.summary_text1 %}<li class="card-text popular_reason1"><h4 style="display:inline;font-size:1.2rem;">{{t.summarys.summary_text1}}</h4></li>{% endif %}
+                    {% if t.summarys.summary_text2 %}<li class="card-text popular_reason2"><h4 style="display:inline;font-size:1.2rem;">{{t.summarys.summary_text2}}</h4></li>{% endif %}
+                    {% if t.summarys.summary_text3 %}<li class="card-text popular_reason3"><h4 style="display:inline;font-size:1.2rem;">{{t.summarys.summary_text3}}</h4></li>{% endif %}
+                </ol>
+                <ol class="card-text popular_reason"><span class="popular_reason_title marker">今週のネガティブ感想上位</span><br>
+                    {% if t.summarys.summary_text21 %}<li class="card-text popular_reason1"><h4 style="display:inline;font-size:1.2rem;">{{t.summarys.summary_text21}}</h4></li>{% endif %}
+                    {% if t.summarys.summary_text22 %}<li class="card-text popular_reason2"><h4 style="display:inline;font-size:1.2rem;">{{t.summarys.summary_text22}}</h4></li>{% endif %}
+                    {% if t.summarys.summary_text23 %}<li class="card-text popular_reason3"><h4 style="display:inline;font-size:1.2rem;">{{t.summarys.summary_text23}}</h4></li>{% endif %}
+                </ol>                 
+                <a href="{% url 'anime' t.url %}" class="btn btn-info">もっと見る</a>
+              </div>
+            <!-- card -->
+            </div>
+
+        <!--swiper-slide -->
+        </div>
+        {% endfor %}
+      <!--swiper-wrapper -->
+      </div>
+
+    <!--mySwiper -->
+    </div>
+
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5112565126786179"
+     crossorigin="anonymous"></script>
+
+<ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-5112565126786179"
+     data-ad-slot="7789497436"
+     data-ad-format="auto"
+     data-full-width-responsive="true"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+
+
+        <div style="max-width:60rem;line-height:3rem;margin: auto;background:floralwhite; border:black; margin-top:4rem; margin-bottom:3rem;">
+        <p class="text-center" style="font-size:1.4rem;">【ぷらこめとは】</p>
+        <p class="text-left" style="font-size:1.3rem;"><strong>気になるアニメやキャラクターのツイッター上の評判を調べることができます。</strong><br>「今人気のあのアニメの実際の評判は?」<br>「あのキャラクターが今人気だけど、どうして人気なの?」<br>「あのアニメが面白かったので次も似たようなアニメが見たいけれど、どれがおすすめ?」<br>等のアニメファンが頻繁に抱くこのような疑問に答えるため、ツイッター上に存在する膨大な数の生の意見をAIが調査・分析し、<strong>最高評価、高評価、低評評価、最低評価の4段階に分けたうえでそれぞれの意見を要約し表示します</strong>ので、全国の人々の実際の反応やリアクションが簡単にわかります。</p>
+        </div>
+
+        <div style="display: flex; text-align: center;">
+<a href="https://blog.with2.net/link/?id=2092688&cid=1139" title="レビューランキング"><img width="110" height="31" src="https://blog.with2.net/img/banner/c/banner_1/br_c_1139_1.gif"></a><br><a href="https://blog.with2.net/link/?id=2092688&cid=1139" title="レビューランキング" style="font-size: 0.9em;">レビューランキング</a><a href="https://animation.blogmura.com/anime_study/ranking/in?p_cid=11151659" target="_blank"><img src="https://b.blogmura.com/animation/anime_study/88_31.gif" width="88" height="31" border="0" alt="にほんブログ村 アニメブログ アニメ考察・研究へ" /></a><br /><a href="https://animation.blogmura.com/anime_study/ranking/in?p_cid=11151659" target="_blank">にほんブログ村</a></div>
+        <br>
+
+<!--container-->
+</div>
+
+
+
+
+
+
+
+{% endblock %}
+
+{% block javascript %}
+
+<script src="https://unpkg.com/swiper@8/swiper-bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.bundle.min.js"></script>
+
+<script>
+// 円グラフ表示    
+    
+// id割り付け
+let moji = "pieID"
+let pie = document.getElementsByClassName("pie_title");
+
+    // pieラベル名＋%表示させる
+    var dataLabelPlugin = {
+        afterDatasetsDraw: function (chart, easing) {
+            // To only draw at the end of animation, check for easing === 1
+            var ctx = chart.ctx;
+
+            chart.data.datasets.forEach(function (dataset, i) {
+                var dataSum = 0;
+                dataset.data.forEach(function (element){
+                    dataSum += element;
+                });
+
+                var meta = chart.getDatasetMeta(i);
+                if (!meta.hidden) {
+                    meta.data.forEach(function (element, index) {
+                        // Draw the text in black, with the specified font
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+
+                        var fontSize = 12;
+                        var fontStyle = 'normal';
+                        var fontFamily = 'Helvetica Neue';
+                        ctx.font = Chart.helpers.fontString(fontSize, fontStyle, fontFamily);
+
+                        // Just naively convert to string for now
+                        //var labelString = chart.data.labels[index];
+                        var dataString = Math.round((dataset.data[index] / dataSum) * 100).toString() + "%";
+
+                        // Make sure alignment settings are correct
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        var padding = 5;
+                        var position = element.tooltipPosition();
+                        //ctx.fillText(labelString, position.x, position.y - (fontSize / 2) - padding);
+                        ctx.fillText(dataString, position.x, position.y + (fontSize / 2) - padding);
+                    });
+                }
+            });
+        }
+    };    
+    
+
+    
+        
+function displayChart(canvasId, chartType, counts) {
+  var ctx = document.getElementById(canvasId);
+  var myPieChart = new Chart(ctx, {
+    type: chartType,
+    data: {
+            datasets: [{
+                data: [Number(counts[0]),
+                       Number(counts[1]),
+                       Number(counts[2]),
+                       Number(counts[3])
+                       ],
+                       
+                backgroundColor: ['#1E90FF','#00BFFF','#E9967A','#DB7093']
+            }],
+            labels: [
+                '最高評価',
+                '高評価',
+                '低評価',
+                '最低評価'
+           ]
+            
+    },
+    options:{//グラフのオプション
+      //maintainAspectRatio: false,//CSSで大きさを調整するため、自動縮小をさせない
+      maintainAspectRatio: false,
+      responsive: true, // trueにするとスマホ領域からはみ出る
+
+      legend:{
+        display: false,
+      },
+      title:{//上部タイトル表示の設定
+        display: false,
+
+      },
+
+    
+    },
+    plugins: [dataLabelPlugin], // パーセント表示させるプラグイン https://beiznotes.org/show-percentage-on-chart-js/
+
+  });
+}
+
+for (let j=0;j<=pie.length-1;j++) {
+    pie[j].setAttribute("id",moji+j);
+    let counts = pie[j].textContent.split(",");
+
+    displayChart(`pieID${j}`, "pie", counts);
+}
+
+
+</script>
+<!-- Initialize Swiper -->
+<script>
+  var swiper = new Swiper(".mySwiper", {
+    //slidesPerView: 4,
+    //spaceBetween: 20,
+    freeMode: true,
+    autoplay: {
+      delay: 10000, //7秒後に移動
+      disableOnInteraction: false,
+    },
+    breakpoints: {
+      480: {
+        slidesPerView: 1,
+        spaceBetween: 5,
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 10,
+      },
+      1024: {
+        slidesPerView: 4,
+        spaceBetween: 10,
+      },
+    },
+  });
+</script>
+
+<script>
+// もっと読むボタン
+window.onload = function() {
+  //複数のdiv要素に動的なidをつける
+// title
+    let moji_t = "title_index"
+
+    let title_sum = document.getElementsByClassName("title_sum");
+    let title_list = document.getElementsByClassName("title_list");
+
+    for(let k=0;k<=title_sum.length-1;k++){
+        
+        title_list[k].setAttribute("id",moji_t+k);
+         
+        title_sum[k].setAttribute("href","#"+moji_t+k);
+
+    };
+
+// chara
+    let moji_c = "chara_index"
+
+    let chara_sum = document.getElementsByClassName("chara_sum");
+    let chara_list = document.getElementsByClassName("chara_list");
+
+
+    for(let k=0;k<=chara_sum.length-1;k++){
+        
+        chara_list[k].setAttribute("id",moji_c+k);
+         
+        chara_sum[k].setAttribute("href","#"+moji_c+k);
+
+    };
+// op
+    let moji_o = "op_index"
+
+    let op_sum = document.getElementsByClassName("op_sum");
+    let op_list = document.getElementsByClassName("op_list");
+
+
+    for(let k=0;k<=op_sum.length-1;k++){
+        
+        op_list[k].setAttribute("id",moji_o+k);
+         
+        op_sum[k].setAttribute("href","#"+moji_o+k);
+
+    };
+
+};
+
+</script>
+
+<script src="https://starratingjs.netlify.app/index.js"></script>
+<script>
+
+//rating system
+var properties1=[
+    {% for t in title_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];
+var properties2=[
+    {% for t in chara_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];   
+var properties3=[
+    {% for t in op_rank %}
+    {% if t.満足度 >= 85 %}
+    {"rating":"5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"1"},
+    {% elif t.満足度 >= 80 %}
+    {"rating":"4.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 75 %}
+    {"rating":"4.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 70 %}
+    {"rating":"3.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 65 %}
+    {"rating":"3.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% elif t.満足度 >= 60 %}
+    {"rating":"2.5", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% else %}
+    {"rating":"2.0", "maxRating":"5", "readOnly":"yes", "starImage":"{% static 'image/1st.png' %}", "starSize":"24", "step":"0.1"},
+    {% endif %}
+    {% endfor %}
+];    
+            
+var className="ratingSystem1";
+var className="ratingSystem2";
+var className="ratingSystem3";
+
+//execution
+rateSystem("ratingSystem1", properties1, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+rateSystem("ratingSystem2", properties2, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+rateSystem("ratingSystem3", properties3, function(rating, ratingTargetElement){  ratingTargetElement.parentElement.parentElement.getElementsByClassName("ratingHolder")[0].innerHTML = rating;  });
+
+</script>
+
+{% endblock %}
+

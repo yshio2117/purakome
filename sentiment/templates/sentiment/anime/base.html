@@ -1,0 +1,567 @@
+{% load static %}
+{% load boost %}
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og:http://ogp.me/ns#">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NGPST6PSGS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-NGPST6PSGS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
+{% block head %}{% endblock %}
+<title>{% block title %}{% endblock %}</title>
+<meta name="description" content="プラコメでは現在放送中のアニメに対するオンライン上の大量の意見や感想、リアクションを集計分析し、人気・不人気の理由、人々の要望や改善点を出来る限り簡潔にまとめて提示することを目指しています。">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.css"/>
+<link rel="stylesheet" href="https://unpkg.com/swiper@8/swiper-bundle.min.css"/>
+<link rel="stylesheet" text="text/css" href="{% static 'css/style.css' %}"/>
+<link rel="alternate" type="application/rss+xml" title="RSS2.0" href="https://purakome.net/sentiment/anime/feed/"/>
+<script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.js"></script>
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light" id="navbarNavDropdown">
+  <div class="container-fluid">
+
+    <a class="nav-link title" role="button" href="{% url 'index' %}">
+      <img src="{% static 'image/siteicon_anime.webp' %}" height="90" width="230" alt="サイトアイコン">
+    </a>
+
+    <!-- Toggle button -->
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-mdb-toggle="collapse"
+      data-mdb-target="#navbarLeftAlignExample"
+      aria-controls="navbarLeftAlignExample"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Collapsible wrapper -->
+    <div class="collapse navbar-collapse" id="navbarLeftAlignExample">
+      <!-- Left links -->
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            アクション
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' name='jojo-stone-ocean' %}" >ジョジョの奇妙な冒険-StoneOcean</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='mobpsycho100-3' episode=6 %}" >モブサイコ100-Ⅲ</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'lycoris-recoil' %}" name="anime">リコリス・リコイル</a>
+              </li>  
+
+
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'rwby' %}" name="anime">RWBY 氷雪帝国</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'engage-kiss' %}" name="anime">Engage Kiss</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'fuuto' %}" name="anime">風都探偵</a>
+              </li>
+
+          </ul>
+        </li>
+    
+        
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            ファミリー/コメディ
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='cooldoji' episode=7 %}" >クールドジ男子</a>
+              </li>
+
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='fuukoi-anime' episode=6 %}" >夫婦以上、恋人未満。</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'yamanosusume' %}" >ヤマノススメ</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='shippona' episode=1 %}" >うちの師匠はしっぽがない</a>
+              </li>
+              <li>
+                <a class="dropdown-item " href="{% url 'anime' 'SpyxFamily' %}">SpyxFamily</a>
+              </li>
+ 
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'kami-kuzu' %}">神クズ☆アイドル</a>
+              </li>  
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'jashinchan' %}">邪神ちゃんドロップキックX</a>
+              </li>    
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'kumichomusume' %}">組長娘と世話係</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'maousama' %}" >はたらく魔王さま!!</a>
+              </li>
+                                                     
+          </ul>
+        </li>
+        
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            スポーツ
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='bluelock' episode=4 %}" >ブルーロック</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'アオアシ' %}" >アオアシ</a>              
+              </li>            
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'extreme-hearts' %}" >Extreme Hearts</a>              
+              </li>
+          </ul>
+        </li>
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            ファンタジー/異世界
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'mushikaburihime' %}">虫かぶり姫</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'kokyu' %}">後宮の烏</a>
+              </li>  
+               <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='shinmai-renkin' episode=8 %}">新米錬金術師の店舗経営</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'luminous' %}" >ルミナスウィッチーズ</a>
+              </li>  
+               <li>
+                <a class="dropdown-item" href="{% url 'anime' 'tenseikenja' %}" >転生賢者の異世界ライフ</a>
+              </li>
+               <li>
+                <a class="dropdown-item" href="{% url 'anime' 'vermeilingold' %}" >金装のヴェルメイユ</a>
+              </li>              
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'overlord' %}" >オーバーロードIV</a>
+              </li>  
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'isekai-harem' %}" >異世界迷宮でハーレムを</a>
+              </li>                
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'isekaiojisan' %}">異世界おじさん</a>
+              </li>  
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'miabyss' %}" >メイドインアビス 烈日の黄金郷</a>
+              </li>  
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'utawarerumono' %}" >うたわれるもの 二人の白皇</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'shadowshouse' %}" >シャドーハウス</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'isekai-yakkyoku' %}" >異世界薬局</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='hoshinosamidare' episode=1 %}" >惑星のさみだれ</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='primadoll' episode=1 %}" >プリマドール</a>
+              </li>
+        </ul>
+        </li>
+
+
+        <li class="nav-item dropdown">
+          <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+          >
+            青春/スクール
+          </a>
+          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'kanokari' %}" >彼女、お借りします</a>
+              </li>  
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'you-zitsu' %}" >ようこそ実力至上主義の教室へ</a>
+              </li>  
+               <li>
+                <a class="dropdown-item" href="{% url 'anime' 'tsurekano' %}" >継母の連れ子が元カノだった</a>
+              </li> 
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'tokyo-mew-mew' %}" >東京ミュウミュウ にゅ～♡</a>
+              </li>      
+               <li>
+                <a class="dropdown-item" href="{% url 'anime' 'shinepost' %}" >シャインポスト</a>
+              </li>      
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'soreayu' %}" >それでも歩は寄せてくる</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'yofukashi-no-uta' %}">よふかしのうた</a>
+              </li>
+              <li>
+                <a class="dropdown-item" href="{% url 'anime' 'maid-ga-ayashii' %}" >最近雇ったメイドが怪しい</a>
+              </li>                                                                  
+              <li>
+                <a class="dropdown-item" href="{% url 'anime_episode' name='teppen' episode=1 %}" >てっぺんっ!</a>
+              </li>
+         </ul>
+        </li>
+        
+        <li class="nav-item dropdown">
+            <a
+            class="nav-link dropdown-toggle"
+            href="#"
+            id="navbarDropdown"
+            role="button"
+            data-mdb-toggle="dropdown"
+            aria-expanded="false"
+            >
+            2022春アニメ
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink" >
+            
+              <li>
+                <a class="dropdown-item" href="#">
+                  アクション &raquo;
+                </a>
+                <ul class="dropdown-menu dropdown-submenu">
+    
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '半妖の夜叉姫' %}">半妖の夜叉姫</a>
+                  </li>           
+    
+                  <li>
+                    <a class="dropdown-item " href="{% url 'anime' '鬼滅の刃' %}" >鬼滅の刃</a>
+                  </li>
+                 
+                </ul>            
+              </li>
+              
+              <li>
+                <a class="dropdown-item" href="#">
+                  ファミリー/コメディ &raquo;
+                </a>
+                <ul class="dropdown-menu dropdown-submenu">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '吸血鬼すぐ死ぬ' %}" >吸血鬼すぐ死ぬ</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'であいもん' %}" >であいもん</a>
+                  </li>       
+                  
+                </ul>            
+              </li>  
+              
+              <li>
+                <a class="dropdown-item" href="#">
+                  スポーツ &raquo;
+                </a>
+                <ul class="dropdown-menu dropdown-submenu">
+         
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'ダンス・ダンス・ダンスール' %}" >ダンス・ダンス・ダンスール</a>              
+                  </li>            
+    
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '群青のファンファーレ' %}" >群青のファンファーレ</a>              
+                  </li>    
+                  
+                </ul>            
+              </li>  
+              
+              <li>
+                <a class="dropdown-item" href="#">
+                  ファンタジー/異世界 &raquo;
+                </a>
+                <ul class="dropdown-menu dropdown-submenu">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'ヴァニタスの手記' %}" >ヴァニタスの手記</a>
+                  </li>          
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '盾の勇者の成り上がり' %}" >盾の勇者の成り上がり</a>              
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '処刑少女の生きる道' %}">処刑少女の生きる道</a>              
+                  </li>              
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '転生したらスライムだった件' %}" >転生したらスライムだった件</a>              
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'パリピ孔明' %}" >パリピ孔明</a>              
+                  </li>        
+                  
+                </ul>            
+              </li>  
+              
+              <li>
+                <a class="dropdown-item" href="#">
+                  ホラー/サスペンス &raquo;
+                </a>
+                <ul class="dropdown-menu dropdown-submenu">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '見える子ちゃん' %}" >見える子ちゃん</a>                            
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'トモダチゲーム' %}" >トモダチゲーム</a>                            
+                  </li>       
+                  
+                </ul>            
+              </li>  
+              
+              <li>
+                <a class="dropdown-item" href="#">
+                  青春/スクール &raquo;
+                </a>
+                <ul class="dropdown-menu dropdown-submenu">
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'かぐや様は告らせたい-ウルトラロマンティック-' %}" >かぐや様は告らせたい</a>                            
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '阿波連さんははかれない' %}" >阿波連さんははかれない</a>                            
+                  </li> 
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' 'その着せ替え人形は恋をする' %}">その着せ替え人形は恋をする</a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '古見さんは、コミュ症です。' %}" >古見さんは、コミュ症です。</a>              
+                  </li>              
+                  <li>
+                    <a class="dropdown-item" href="{% url 'anime' '美少女戦士セーラームーン' %}">美少女戦士セーラームーン</a>
+                  </li>       
+                  
+                </ul>            
+              </li>  
+                          
+                                                                                                                 
+            </ul>
+        </li>     
+                  
+                                        
+      </ul>
+
+    </div>
+  </div>
+</nav>
+<!--container-->
+</div>
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-white">
+  <div class="spinner-border text-info" role="status" id="loading">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <span class="text-info nowloading">&nbsp;loading.. ʕ˵·ᴥ·ʔ</span>
+</div>
+
+<div id="hide_contents"> <!-- spinner表示時に隠す -->
+
+{% block header %}{% endblock %}
+
+{% if messages %}
+  <div class="container">
+      <div class="row">
+          <div class="w-100">
+              <ul class="messages" style="list-style: none;">
+                  {% for message in messages %}
+                  <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                      {{ message }}
+                  </li>
+                  {% endfor %}
+              </ul>
+          </div>
+      </div>
+  </div>
+{% endif %}
+
+{% block contents %}{% endblock %}
+
+<!--上部へ戻るボタン-->
+<div id="page_top">
+  <a href="#"></a>
+</div>
+
+<!--Footer-->
+<footer class="py-5 bg-black">
+    <div class="container">
+        <p class="m-0 text-center text-white small">Copyright &copy; プラコメ 2022</p>
+        <hr>
+        <a href="{% url 'contact' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">お問い合わせ</p>
+        </a>
+        
+        <hr>
+        <a href="{% url 'sitepolicy' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">プライバシーポリシー/免責事項</p>
+        </a>
+        <hr>
+        <!--<a href="{% url 'aboutus' %}" style="text-decoration:none; color:black;">-->
+          <p class="m-0 text-center text-white">About us</p>
+        <!--</a>-->
+        <br>        
+        <br>
+
+        <div style="margin-top:3rem; margin-bottom:3rem;">
+        <p class="m-0 text-white text-center">【サイトの注意事項】</p><br>
+        <p class="m-0 text-white text-left">*1)各ツイートに対するポジティブ・ネガティブの感情判定は当サイト独自の基準によるものであり、投稿者の実際の感情や意図と異なる場合があります。</p>
+        <p class="m-0 text-white text-left">*2)各アニメページの[要約されたツイートの一覧]に併記されているツイートは一部のみ抜粋・表示されております。実際に該当する投稿数は要約文下の(～ツイート)の数字をご確認ください。</p>
+        <p class="m-0 text-white text-left">*3)各アニメのイラストの描写にはwordcloudを用い、投稿文の文章構造を解析し、対象への形容表現が出現順に視覚的に大きくなるようにしています。</p>
+        <p class="m-0 text-white text-left">*4)[あなたにおすすめのアニメ]に表示されるアニメは、アニメに対するポジティブな感想・リアクション、またストーリー等を含めた類似度を算出し他のアニメのものと比較し、同じポジティブなリアクションをする可能性が高い(例：Aが可愛いと思うのであれば類似するBも可愛いと思う)アニメを表示しています。</p>
+        </div>
+
+
+
+    </div>
+</footer>
+<!-- hide_contents -->
+</div>
+
+
+
+
+<!----------JAVASCRIPT--------------->
+<script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-rc.2/lazyload.min.js"></script>
+
+{% block javascript %}{% endblock %}
+
+
+ 
+
+<!-- 翻訳
+<script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+-->
+<script>
+
+//let langselect = document.getElementsByClassName("lang-select");
+//for (let j=0;j<=langselect.length-1;j++){
+//    langselect[j].addEventListener('click', function(){
+//      lang = langselect[j].getAttribute("data-lang");
+//      window.location = langselect[j].getAttribute("href");
+//      location.reload();
+//    });
+//};
+    
+//function googleTranslateElementInit() {
+//    new google.translate.TranslateElement({
+//    pageLanguage: 'ja', 
+//    layout: google.translate.TranslateElement.FloatPosition.TOP_LEFT
+//  }, 'google_translate_element');
+//};
+
+</script>
+
+
+
+
+<script>
+//ボタン複数回クリック防止
+
+var loading = document.getElementById('loading');
+var contents = document.getElementById('hide_contents');
+  
+//var menu = document.getElementById('navbarSupportedContent');
+
+// spinnerが表示されていたら非表示(キャッシュ読込時も動作)
+window.addEventListener("pageshow", () => {
+  if( loading.parentNode.classList.contains('vh-100') == true ){
+     
+     loading.classList.add('d-none');
+     loading.parentNode.classList.replace('vh-100', 'd-none');
+     contents.classList.remove('d-none'); 
+     //menu.classList.remove('d-none');     
+  }
+});
+
+
+
+window.addEventListener("beforeunload", () => {
+
+    //console.log("moving..");
+      //console.log(menu)
+      //let newevent = new Event('click');
+      //menu.dispatchEvent(newevent); // メニュー閉じる
+      //menu.classList.add("d-none");
+            
+      loading.classList.remove('d-none');
+      loading.parentNode.classList.replace('d-none', 'vh-100');
+      contents.classList.add('d-none');
+          
+});
+
+</script>
+
+<script>
+	/////// Prevent closing from click inside dropdown
+		document.querySelectorAll('.dropdown-menu').forEach(function(element){
+			element.addEventListener('click', function (e) {
+			  e.stopPropagation();
+			});
+		})
+	//// リサイズごとに画面リロード（しないとカルーセルの動作がおかしくなる
+	
+//	window.addEventListener("resize", function() {
+//		"use strict"; window.location.reload(); 
+//	});
+		
+</script>  
+
+<script>lazyload();</script>
+
+</body>
+</html>
+    

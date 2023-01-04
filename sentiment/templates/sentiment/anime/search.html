@@ -1,0 +1,73 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+
+
+{% block title %}検索 | ポジネガ探偵ぷらこめ{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block header %}
+<div class="container">
+    <h2><span class="sub_titles">検索:{{key}}</span></h2>
+    <h3>{{result}}件</h3>
+    <h4>
+    
+<div>
+{% endblock %}
+
+{% block contents %}
+<div class="container">
+    <div class="row">
+
+    
+        <div class="col-10">
+            <table class="table table-sm table-hover fs-3">
+              <thead>
+                <th></th>
+                <th></th>
+              </thead>
+              <tbody>
+              {% for p in possibles %}
+                {% if p.kind == 0 %}
+                <tr>
+                    <td>・
+                    <a href="{% url 'anime' p.url_name %}" class="text-dark no_underbar btnforspinner" name="anime">{{p.official_name}}</a>
+                    </td>
+                    <td></td>
+                </tr>
+                {% else %}
+                
+                <tr>
+                    <td>・
+                    
+                    <a href="{% url 'anime' p.title_url %}" class="text-dark no_underbar btnforspinner" name="anime">{{p.official_name}}</a>
+                    </td>
+                    <td>
+
+                    (アニメ:<a href="{% url 'anime' p.title_url %}" class="text-dark no_underbar btnforspinner" name="c_anime">{{p.title_name}}</a>)
+
+                    </td>
+                </tr>
+                
+                {% endif %}
+              {% endfor %}
+              </tbody>
+            </table>
+                    
+            <br>
+
+        </div>
+    
+    
+    <div class="col-lg-4">
+
+    </div>
+    
+  </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+
+{% endblock %}

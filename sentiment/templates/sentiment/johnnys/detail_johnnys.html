@@ -1,0 +1,413 @@
+{% extends 'sentiment/johnnys/base_johnnys.html' %}
+{% load static %}
+{% load boost %}
+{% load filter %}
+
+{% block title %}
+{{short_name}}のツイート詳細検索 | ポジネガ探偵ぷらこめ
+{% endblock %}
+
+{% block head %}
+{% if episode != 0 %}
+<link rel="canonical" href="https://purakome.net/sentiment/johnnys/{{name}}/{{episode}}/">
+{% endif %}
+{% endblock %}
+
+{% block header %}
+<div class="container p-3">
+    <h1><a href="{% url 'j_event' name=name episode=episode %}" style="text-decoration:none; color:black;">
+        <span class="sub_titles">
+        {{title_name}}{% if short_name not in title_name %}({{short_name}}){% endif %}{% if title_episode %} | {{title_episode}}{% endif %} | ツイッター評判まとめ</span>
+        </a>
+        {% if datalimit %}
+        <span class="period">({{period_start}} ~ {{period_end}} 対象ツイート:+500件)</span>
+        {% else %}
+        <span class="period">({{period_start}} ~ {{period_end}} 対象ツイート:{{data_num}}件)</span>
+        {% endif %}
+    </h1>
+
+</div>
+{% endblock %}
+
+{% block contents %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+          <div style="text-align: left; font-size:1.3rem;">
+            <form class="w-auto" action="{% url 'detail_johnnys' name=name episode=episode %}" method="get" style="margin-top:2rem;">
+                <div>
+                    {{form}}
+                </div>
+                <div>
+                    {{form2}}
+                </div>
+                <div>
+                    {{form3}}
+                    <button type="submit" class="btn btn-primary"><font style="font-size:1.2rem;">検索</font></button>
+                </div>
+            </form>
+          </div>
+
+<!--要約の表示-->
+          {% if summarys %}
+
+          <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="th_fordesktop"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in summarys %}
+                    <tr>
+                        <td class="summary_p">
+                            <p class="summary_text">{{summary.要約}}</p>
+                            <p class="summary_num">({{summary.投稿数}}ツイート)</p>
+                        </td>
+                        <td class="related_tweet">
+
+                             <ul class="title_list_p" style="list-style:none;">
+                             {% for item in summary.原文 %}
+                             <li>
+                                 <table>
+                                     <tr>
+                                         <blockquote>
+                                         <td class="tweet"> <!-- 0'content', 1't_id', 2's_name', 3'u_id',4'p_image',5'u_name',6'entities_url',7'entities_display_url',8't_date' -->
+                                           <div class="t_top">
+                                             <div class="profile_wrap">
+                                               <a href="{{item.u_id}}" target="_blank">
+                                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}" alt="profile">
+                                               </a>
+                                             </div>
+                                             <div class="username">
+                                               <p>
+                                                 <a href="{{item.u_id}}" target="_blank">
+                                                   {{item.u_name}}
+                                                 </a>
+                                               </p>
+                                               <a href="{{item.u_id}}" target="_blank">
+                                                 @{{item.s_name}}
+                                               </a>
+                                             </div>
+                                           </div>
+
+                                           <span class="t_contents">
+                                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}}
+                                               {% endwith %}
+                                               {% endwith %}
+                                           </span>
+                                           <div class="t_bottom">
+                                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                                               <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                                           </div>
+                                         </td>
+                                         <td style="vertical-align:top;">
+                                             <img class="lazyload logo" data-src="{% static 'image/blue.png' %}" alt="logo">
+                                         </td>
+                                         </blockquote>
+                                     </tr>
+                                 </table>
+                             </li>
+                             {% endfor %}
+                             </ul>
+
+
+
+                        </td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+          {% if n_summarys %}
+
+          <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th class="th_fordesktop"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in n_summarys %}
+                    <tr>
+                        <td class="summary_p">
+                            <p class="summary_text">{{summary.要約}}</p>
+                            <p class="summary_num">({{summary.投稿数}}ツイート)</p>
+                        </td>
+                        <td class="related_tweet">
+
+                             <ul class="title_list_p" style="list-style:none;">
+                             {% for item in summary.原文 %}
+                             <li>
+                                 <table>
+                                     <tr>
+                                         <blockquote>
+                                         <td class="tweet"> <!-- 0'content', 1't_id', 2's_name', 3'u_id',4'p_image',5'u_name',6'entities_url',7'entities_display_url',8't_date' -->
+                                           <div class="t_top">
+                                             <div class="profile_wrap">
+                                               <a href="{{item.u_id}}" target="_blank">
+                                                 <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}" alt="profile">
+                                               </a>
+                                             </div>
+                                             <div class="username">
+                                               <p>
+                                                 <a href="{{item.u_id}}" target="_blank">
+                                                   {{item.u_name}}
+                                                 </a>
+                                               </p>
+                                               <a href="{{item.u_id}}" target="_blank">
+                                                 @{{item.s_name}}
+                                               </a>
+                                             </div>
+                                           </div>
+
+                                           <span class="t_contents">
+                                               {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                               {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                               {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}}
+                                               {% endwith %}
+                                               {% endwith %}
+                                           </span>
+                                           <div class="t_bottom">
+                                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                                               <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                                           </div>
+                                         </td>
+                                         <td style="vertical-align:top;">
+                                             <img class="lazyload logo" data-src="{% static 'image/blue.png' %}" alt="logo">
+                                         </td>
+                                         </blockquote>
+                                     </tr>
+                                 </table>
+                             </li>
+                             {% endfor %}
+                             </ul>
+
+
+
+                        </td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+<!--p,n全投稿の表示 -->
+            {% if keyword != '' %}
+            <h3 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">キーワード:{{keyword|truncatechars:15}}</h3>
+            <p style="font-size:1.2rem;">({{data_num}}件)</p>
+            {% endif %}
+            <table class="table">
+               <thead class="thead-light">
+               <tr>
+                   <th></th>
+                   <th></th>
+                   <th></th>
+               </tr>
+               </thead>
+               <tbody>
+
+                   {% for item in data %}
+
+                   <tr class="list_pn">
+
+         
+                       {% if item.s_class == 3 %}
+                       <td><i class="far fa-smile-beam fa-2x" style="width:0.5rem;"></i></td>
+                       {% elif item.s_class == 4 %}
+                       <td><i class="far fa-laugh-squint fa-2x" style="width:0.5rem;"></i></td>
+                       {% elif item.s_class == 0 %}
+                       <td><i class="far fa-tired fa-2x" style="width:0.5rem;"></i></td>
+                       {% elif item.s_class == 1 %}
+                       <td><i class="far fa-grin-beam-sweat fa-2x" style="width:0.5rem;"></i></td>
+                       {% endif %}
+                       <blockquote>
+                        <td class="tweet"> <!-- 0'content', 1't_id', 2's_name', 3'u_id',4'p_image',5'u_name',6'entities_url',7'entities_display_url',8't_date' -->
+                          <div class="t_top">
+
+                            <div class="profile_wrap">
+                              <a href="{{item.u_id}}" target="_blank">
+                                <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}" alt="profile">
+                              </a>
+                            </div>
+
+                            <div class="username">
+                              <p>
+                                <a href="{{item.u_id}}" target="_blank">
+                                  {{item.u_name}}
+                                </a>
+                              </p>
+                              <a href="{{item.u_id}}" target="_blank">
+                                @{{item.s_name}}
+                              </a>
+                            </div>
+                          </div>
+                          <!--<span class="t_contents typeing" data-speed="30">-->
+                          <span class="t_contents">
+                              {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                              {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                              {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}}
+                              {% endwith %}
+                              {% endwith %}
+                          </span>
+                          <div class="t_bottom">
+                              <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                              <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                              <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                              <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                          </div>
+                        </td>
+                        <td style="vertical-align:top;">
+
+                            <img class="lazyload logo" data-src="{% static 'image/blue.png' %}" alt="logo">
+
+                        </td>
+                        </blockquote>
+                   </tr>
+
+                   {% endfor %}
+                   <tr>
+                       <td></td>
+                       <td style="text-align: center">
+                         <a href="javascript:void(0)" class="open-btn_pn more_content">もっと見る</a>
+                       </td>
+                       <td></td>
+                   </tr>
+               </tbody>
+            </table>
+
+        </div>
+        <!-- col-lg-8 -->
+
+    <div class="col-lg-4">
+    <!--頻出語表示 -->
+
+            {% if freqs_obj %}
+            <div style="margin-top:11rem;">
+                <h2 style="text-align: center; font-weight:bold; font-size:1.5rem;">
+                  頻出語
+                </h2>
+                <p style="font-size:1.4rem;">
+                {% with word=freqs_obj|slice:"0:50" %}
+                {% with count=freqs_obj|slice:"50:100" %}
+                {% for t, c in word|zip:count %}
+                    {% if t %}
+                      {% if forloop.last %}
+                        {% if c >= 10000 %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.8rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 1000 %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.6rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 100 %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.3rem;">{{t}}({{c}})</font></a>
+                        {% else %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1rem;">{{t}}({{c}})</font></a>
+                        {% endif %}
+                      {% else %}
+                        {% if c >= 10000 %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.8rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 1000 %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.6rem;">{{t}}({{c}})</font></a>
+                        {% elif c >= 100 %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1.3rem;">{{t}}({{c}})</font></a>
+                        {% else %}
+                          <a href="{% url 'detail_johnnys' name=name episode=episode %}?keyword={{t}}"><font style="font-size:1rem;">{{t}}({{c}})</font></a>
+                        {% endif %}
+                      {% endif %}
+                    {% endif %}
+                {% endfor %}
+                {% endwith %}
+                {% endwith %}
+                </p>
+            <hr>
+            </div>
+            {% endif %}
+
+
+
+
+    </div>
+
+  </div>
+  <!-- row -->
+</div>
+<!-- container -->
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+// もっと読むボタン　ポジネガ詳細 20件ずつ表示（閉じるボタンはなし
+
+window.onload = function() {
+
+
+let title_list_pn = document.getElementsByClassName("list_pn");
+let openbtn_pn = document.getElementsByClassName("open-btn_pn")[0];
+
+console.log(title_list_pn.length);
+if (title_list_pn.length < 20) {
+  console.log('リスト20未満.');
+  openbtn_pn.hidden = true;
+  return false;
+}
+
+let hideList_pn = [];
+
+for (let i = 20; i < title_list_pn.length; i++) {
+  hideList_pn.push(title_list_pn[i]);
+  title_list_pn[i].style.display='none';
+}
+console.log(hideList_pn.length);
+
+
+openbtn_pn.addEventListener('click', function(){
+
+      for (let i = 0; i < 20; i++) {
+
+        hideList_pn[0].style.display='table-row';
+        hideList_pn.shift();
+        console.log(hideList_pn.length);
+        if (hideList_pn.length == 0) {
+          console.log('これ以上表示データなし')
+          openbtn_pn.hidden = true;
+          break;
+        }
+      }
+      return false;
+    });
+
+};
+
+
+</script>
+
+<!-- キーワード入力の場合は要約を無効にする -->
+<script>
+  function disable_keyword(ischecked){
+    if(ischecked == true){
+      document.getElementById("keyword_filter").disabled = true;
+    } else {
+      document.getElementById("keyword_filter").disabled = false;
+    }
+  }
+
+  function disable_summarize(value){
+    if(value != ''){
+      document.getElementById("summarize_filter").disabled = true;
+    } else {
+      document.getElementById("summarize_filter").disabled = false;
+    }
+  }
+</script>
+
+{% endblock %}

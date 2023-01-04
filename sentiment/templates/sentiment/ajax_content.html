@@ -1,0 +1,60 @@
+{% load static %}
+{% load filter %}
+{% if summary %}
+<tr>
+    <td class="related_tweet">
+
+         <ul class="title_list_p" style="list-style:none;">
+         {% for item in summary.原文|slice:":10" %}
+         <li>
+             <table>
+                 <tr>
+                     <blockquote>
+                     <td class="tweet">                       
+                        <div chass="t_top">
+
+                         <div class="profile_wrap">
+                           <a href="{{item.u_id}}" target="_blank">
+                             <img class="trim-image-to-circle" src="{{item.p_image}}">
+                           </a>
+                         </div>
+
+                         <div class="username">
+                           <p>
+                             <a href="{{item.u_id}}" target="_blank">
+                               {{item.u_name}}
+                             </a>
+                           </p>
+                           <a href="{{item.u_id}}" target="_blank">
+                             @{{item.s_name}}
+                           </a>
+                         </div>
+                        </div>
+                       <span class="t_contents">
+                           {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                           {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                           {{ item.content | urlize_link:link_urls | urlize_media_ajax:media_urls | safe}}
+                           {% endwith %}
+                           {% endwith %}
+                       </span>
+                       <div class="t_bottom">
+                           <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="actions" src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                           <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="actions" src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                           <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="actions" src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                           <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                       </div>
+                     </td>
+                     <td style="vertical-align:top;">
+
+                         <img class="logo" data-src="{% static 'image/blue.png' %}">
+
+                     </td>
+                     </blockquote>
+                 </tr>
+             </table>
+         </li>
+         {% endfor %}
+
+    </td>
+ </tr>
+{% endif %}

@@ -1,0 +1,185 @@
+{% load static %}
+{% load boost %}
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og:http://ogp.me/ns#">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-NGPST6PSGS"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+
+gtag('config', 'G-NGPST6PSGS');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
+<!--<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5112565126786179"
+     crossorigin="anonymous"></script>-->
+{% block head %}{% endblock %}
+<title>アニメ・アイドルのツイッター評判分析|ぷらこめ</title>
+<meta name="description" content="人気アニメやジャニーズグループへのツイートの評判分析。ポジティブ・ネガティブの分類、上位意見の要約、見える化、人々の要望や改善点など簡潔にまとめて提示します。">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.css" rel="stylesheet"/>
+
+<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}"/>
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+      <div class="col-md-8 order-md-1 col-lg-7 text-center text-md-start" style="margin-top:3rem;">
+        <h1 class="mb-3 toppage_h1">ぷらこめで素早く・簡単に評判調査</h1>
+        <p class="lead mb-4">
+           あなたのお気に入りのアニメやアイドルのSNS上の評判が気になりますか?<br>話し言葉やスラングに特化した感情分析サイトぷらこめでは、高精度AIによる文章のポジティブ・ネガティブ分類だけでなく、上位意見の要約・割合の視覚化や、ストーリーやキャラクター、作画・音楽などアニメを構成する各要素ごとの反応のまとめ、どこの地域で評判が良いか(悪い)か、他の作品・人物との人気比較など、客観的な調査結果を基にした豊富なコンテンツを備えています。
+        </p>
+
+
+        <div style="text-align:center; margin-top:3rem;margin-bottom:5rem;">
+          <div style="margin-top:5rem;margin-bottom:5rem;">
+            <a href="{% url 'sentiment_demo' %}"><h2>最新AIでリアルタイム感情分析(デモ版)を試す</h2></a>
+          </div>
+            <a href="{% url 'index' %}">
+            　　<img src="{% static 'image/siteicon_anime.webp' %}" width="100%" max-width="100px" alt="アニメ感情分析アイコン">
+            　　<h2>アニメ感情分析</h2>
+            </a>
+            <a href="{% url 'j_event' name='travisjapan' episode=1 %}">
+            　　<img src="{% static 'image/siteicon_johnnys.webp' %}" width="100%"  max-width="100px" alt="ジャニーズ感情分析アイコン">
+            　　<h2>ジャニーズ感情分析</h2>
+            </a>
+        </div>
+
+
+      </div>
+
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-white">
+  <div class="spinner-border text-info" role="status" id="loading">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+  <span class="text-info nowloading">&nbsp;loading.. ʕ˵·ᴥ·ʔ</span>
+</div>
+
+<div id="hide_contents"> <!-- spinner表示時に隠す -->
+
+{% block header %}{% endblock %}
+
+{% if messages %}
+  <div class="container">
+      <div class="row">
+          <div class="w-100">
+              <ul class="messages" style="list-style: none;">
+                  {% for message in messages %}
+                  <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>
+                      {{ message }}
+                  </li>
+                  {% endfor %}
+              </ul>
+          </div>
+      </div>
+  </div>
+{% endif %}
+
+{% block contents %}{% endblock %}
+
+<!--上部へ戻るボタン-->
+<div id="page_top">
+  <a href="#"></a>
+</div>
+
+<!--Footer-->
+<footer class="py-5 bg-black">
+    <div class="container">
+        <p class="m-0 text-center text-white small">Copyright &copy; プラコメ 2022</p>
+        <hr>
+        <a href="{% url 'contact' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">お問い合わせ</p>
+        </a>
+
+        <hr>
+        <a href="{% url 'sitepolicy' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">プライバシーポリシー/免責事>項</p>
+        </a>
+        <hr>
+        <a href="{% url 'aboutus' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">About us</p>
+        </a>
+        <br>
+        <br>
+
+    </div>
+</footer>
+</div>
+</div>
+<!----------JAVASCRIPT--------------->
+
+   <!-- bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+     <!-- グラフ化 -->
+
+    <!-- MDB -->
+   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.js"></script>
+   <!-- カスタム-->
+
+   <!-- lazy load -->
+   <script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-rc.2/lazyload.min.js"></script>
+
+{% block javascript %}{% endblock %}
+
+<script>
+//ボタン複数回クリック防止
+
+var loading = document.getElementById('loading');
+var contents = document.getElementById('hide_contents');
+
+//var menu = document.getElementById('navbarSupportedContent');
+
+// spinnerが表示されていたら非表示(キャッシュ読込時も動作)
+window.addEventListener("pageshow", () => {
+  if( loading.parentNode.classList.contains('vh-100') == true ){
+
+     loading.classList.add('d-none');
+     loading.parentNode.classList.replace('vh-100', 'd-none');
+     contents.classList.remove('d-none');
+     //menu.classList.remove('d-none');
+  }
+});
+
+
+window.addEventListener("beforeunload", () => {
+
+    //console.log("moving..");
+      //console.log(menu)
+      //let newevent = new Event('click');
+      //menu.dispatchEvent(newevent); // メニュー閉じる
+      //menu.classList.add("d-none");
+
+      loading.classList.remove('d-none');
+      loading.parentNode.classList.replace('d-none', 'vh-100');
+      contents.classList.add('d-none');
+
+});
+
+</script>
+
+<script>
+        /////// Prevent closing from click inside dropdown
+                document.querySelectorAll('.dropdown-menu').forEach(function(element){
+                        element.addEventListener('click', function (e) {
+                          e.stopPropagation();
+                        });
+                })
+        //// リサイズごとに画面リロード（しないとカルーセルの動作がおかしく>なる
+
+//      window.addEventListener("resize", function() {
+//              "use strict"; window.location.reload();
+//      });
+
+</script>
+
+<script>lazyload();</script>
+
+</body>
+</html>

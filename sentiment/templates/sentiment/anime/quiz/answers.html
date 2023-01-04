@@ -1,0 +1,264 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load boost %}
+{% load filter %}
+
+{% block title %}アニメツイッター穴埋め推理クイズ答え | ぷらこめ{% endblock %}
+{% block head %}<link rel="canonical" href="https://purakome.net/sentiment/anime/quiz/">{% endblock %}
+{% block header %}
+
+{% endblock %}
+
+{% block contents %}
+{% if answer == None %}
+<div class="container" style="text-align:center;margin-top:3rem;">
+  <p style="font-size:1.5rem;">最初からやり直してください</p>
+  <div style="margin-top:3rem;margin-bottom:3rem;">
+    <a role="button" class="more_content" href="{% url 'quiz_index' %}" name="toppage">TOPに戻る</a>
+  </div>
+</div>
+<br>
+<br>
+{% else %}
+<div class="container">
+
+        
+<div style="margin-top:3rem;margin-bottom:1rem;">
+  <div style="font-size:1.5rem;font-weight:bold;">
+    <h1>{{number}}問目:{{msg}}{% if msg == '残念..' %}(正解:<font style="font-weight:bold;">{{correct|quiz_answer}})</font>{% endif %}</h1>
+  </div>
+  <p style="font-size:1.7rem;">あなたの答え:<font style="font-weight:bold;">{{answer|quiz_answer}}</font></p>
+
+  <div style="text-align:left;">
+  {% if number  == 5 %}
+      <form action="{% url 'result' %}" method="post">
+        {% csrf_token %}    
+        <button type="submit" class="more_content" value={{score|join_comma:level_text}} name="result">次へ</a>
+      </form>  
+  {% else %}
+      {% with next=number|add:"1" %}
+      <form action="{% url 'questions' next %}" method="post">
+        {% csrf_token %}   
+        {% if level == 'anime_lv1' %}
+          <button type="submit" class="more_content" value={{score|join_comma:history|join_comma:level|join_comma:level_text}} name="anime_lv1">次へ</a>
+        {% elif level == 'chara_lv1' %}
+          <button type="submit" class="more_content" value={{score|join_comma:history|join_comma:level|join_comma:level_text}} name="chara_lv1">次へ</a>
+        {% elif level == 'chara_lv2' %}
+          <button type="submit" class="more_content" value={{score|join_comma:history|join_comma:level|join_comma:level_text}} name="chara_lv2">次へ</a>
+        {% elif level == 'cv_lv1' %}
+          <button type="submit" class="more_content" value={{score|join_comma:history|join_comma:level|join_comma:level_text}} name="cv_lv1">次へ</a>
+        {% elif level == 'oped_lv1' %}
+          <button type="submit" class="more_content" value={{score|join_comma:history|join_comma:level|join_comma:level_text}} name="oped_lv1">次へ</a>
+
+        {% endif %}
+      </form>
+      {% endwith %}
+  {% endif %}
+  </div>
+
+<!--fanarts--->
+    {% with arts=fanarts %}
+    {% if arts %}
+
+<!-- Swiper -->
+
+    <div class="swiper mySwiper2" style="margin-top:2rem;height:150px;">
+      <div class="swiper-wrapper">
+            {% for item in arts %}
+            {% if item %}
+        <div class="swiper-slide">
+            <div class="card h-100">
+              <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+                <blockquote>
+
+                      <div class="profile_wrap">
+                        <a href="{{item.u_id}}" target="_blank">
+                          <img class="lazyload trim-image-to-circle" style="width:75%;height:75%" data-src="{{item.p_image}}">
+                        </a>
+                      </div>
+
+                      <div class="username">
+                        <p>
+                          <a href="{{item.u_id}}" target="_blank">
+                            {{item.u_name|truncatechars:10}}
+                          </a>
+                        </p>
+                        <a href="{{item.u_id}}" target="_blank">
+                          @{{item.s_name|truncatechars:15}}
+                        </a>
+                      </div>
+                    {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                    {{ item.media_url_truncated | urlize_media:media_urls | safe}}
+                    {% endwith %}
+                </blockquote>
+              </div>
+            <!-- card -->
+            </div>
+        <!--swiper-slide -->
+        </div>
+            {% endif %}
+            {% endfor %}
+      <!--swiper-wrapper -->
+      </div>
+    <!--mySwiper -->
+    </div>
+    {% endif %}
+    {% endwith %}
+  
+  <div style="margin-top:3rem; background:mistyrose;">
+  <h3>正解ツイート</h3>
+      <table class="table table-sm quiz-table">
+        <tbody class="quiz-tbody">
+          <tr class="quiz-tr">
+           <td class="quiz-td">
+           
+           
+           <table class="table table-sm">                  
+               <tbody>
+                   
+                   {% for item in data|slice:":5" %}
+                   
+                   <tr class="list_pn">
+                      
+                       <blockquote>
+
+                       <td class="tweet">
+                           <div class="t_top">
+
+                              <div class="profile_wrap">
+                                <a href="{{item.u_id}}" target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}">
+                                </a>
+                              </div>
+
+                              <div class="username">
+                                <p>
+                                  <a href="{{item.u_id}}" target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href="{{item.u_id}}" target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>
+                           <span class="t_contents"> <!-- contents -->
+                                {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}}
+                                {% endwith %}
+                                {% endwith %}
+                           </span>
+
+                           <div class="t_bottom">
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                               <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                           </div>
+
+                       </td>
+
+
+                       <!-- tweet logo -->
+                       <td style="vertical-align:top;">
+
+                           <img class="lazyload logo" data-src="{% static 'image/blue.png' %}">
+
+                       </td>
+                       </blockquote>
+                   </tr>
+                   
+                   {% endfor %}        
+
+               </tbody>
+            </table>
+          </td>
+          
+          <td>
+           <table class="table table-sm">                  
+               <tbody>
+                   
+                   {% for item in data|slice:"5:" %}
+                   
+                   <tr class="list_pn">
+                      
+                       <blockquote>
+
+                        <td class="tweet">
+                            <div class="t_top">
+
+                               <div class="profile_wrap">
+                                 <a href="{{item.u_id}}" target="_blank">
+                                   <img class="lazyload trim-image-to-circle" data-src="{{item.p_image}}">
+                                 </a>
+                               </div>
+
+                               <div class="username">
+                                 <p>
+                                   <a href="{{item.u_id}}" target="_blank">
+                                     {{item.u_name}}
+                                   </a>
+                                 </p>
+                                 <a href="{{item.u_id}}" target="_blank">
+                                   @{{item.s_name}}
+                                 </a>
+                               </div>
+                            </div>
+                            <span class="t_contents"> <!-- contents -->
+                                 {% with link_urls=item.entities_url|join_comma:item.entities_display_url|join_comma:item.hashtag %}
+                                 {% with media_urls=item.media_url_truncated|join_comma:item.media_url|join_comma:item.t_id %}
+                                 {{ item.content | urlize_link:link_urls | urlize_media:media_urls | safe}}
+                                 {% endwith %}
+                                 {% endwith %}
+                            </span>
+
+                            <div class="t_bottom">
+                                <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/reply-action_0.png' %}" alt="reply"></a>&nbsp;
+                                <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/retweet-action.png' %}" alt="retweet"></a>&nbsp;
+                                <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src="{% static 'image/like-action.png' %}" alt="like"></a>&nbsp;
+                                <a href="{{item.t_id}}" target="_blank">{{item.t_date}}</a>
+                            </div>
+
+                        </td>
+
+
+                        <!-- tweet logo -->
+                        <td style="vertical-align:top;">
+
+                            <img class="lazyload logo" data-src="{% static 'image/blue.png' %}">
+
+                        </td>
+                       </blockquote>
+                   </tr>
+                   
+                   {% endfor %}        
+
+               </tbody>
+            </table>
+          </td>
+         </tr>
+         </tbody>
+        </table>
+                    
+  </div>
+
+</div>
+{% endif %}
+{% endblock %}
+
+{% block javascript %}
+{% if fanarts %}
+<script>
+  var swiper = new Swiper(".mySwiper2", {
+    slidesPerView: 3,
+    spaceBetween: 30,
+    autoplay: {
+      delay: 5500,
+      disableOnInteraction: false,
+    },
+  });
+</script>
+{% endif %}
+    
+{% endblock %}

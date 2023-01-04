@@ -1,0 +1,212 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load filter %}
+
+{% block title %}{{name}}({{pnmsg}}) | プラコメ{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block header %}
+<div class="container p-3">
+    {% if title_name == name %}
+    <h2><a href={% url 'anime' name %} style="text-decoration:none; color:black;">
+        <span class="sub_titles">{{name}}</span>
+        </a>
+        <span class="period">({{period_start}} ~ {{period_end}} 対象ツイート:{{data_num}}件)</span>
+    </h2>
+    {% else %}
+    <h2><a href={% url 'character' name %} style="text-decoration:none; color:black;">
+        <span class="sub_titles">{{name}}</span>
+        </a>
+        <a href={% url 'anime' title_name %} style="text-decoration:none; color:black;">
+        <span class="sub_titles">({{title_name}})</span>
+        </a>
+        <span class="period">({{period_start}} ~ {{period_end}} 対象ツイート:{{data_num}}件)</span>
+    </h2>
+    {% endif %}
+        
+<div>
+{% endblock %}
+
+{% block contents %}
+<div class="container">
+    <div class="row">    
+        <div class="col-lg-8">
+    <!-- tweet p2&p1表示-->
+
+            <table class="table">           
+               <thead class="thead-light">
+               <tr>
+                   <th></th>
+                   <th></th>
+                   <th></th>           
+               </tr>
+               </thead>           
+               <tbody>
+                   
+                   {% for item in p_data %}
+                   
+                   <tr class="list_pn">
+                  
+                   <!--<td><img src={% static 'image/positive.PNG' %} width="20px" height="20px" alt="positive"</td>-->
+                       {% if item.s_class == 3 %}
+                       <td><i class="far fa-smile-beam fa-2x" style="width:0.5rem;"></i></td>
+                       {% elif item.s_class == 4 %}
+                       <td><i class="far fa-laugh-squint fa-2x" style="width:0.5rem;"></i></td>
+                       {% elif item.s_class == 0 %}
+                       <td><i class="far fa-tired fa-2x" style="width:0.5rem;"></i></td>                       
+                       {% elif item.s_class == 1 %}
+                       <td><i class="far fa-grin-beam-sweat fa-2x" style="width:0.5rem;"></i></td>
+                       {% endif %}
+                      
+                       <!--
+                       {% with template=item.u_id|add:"/photo" %}
+                       <td><img src={{template}} crossorigin="anonymous" alt="Grape"></td>
+                       {% endwith %}-->
+                       <blockquote>
+                       {% if item.media_url %}
+                       <td class="tweet">
+                           <div>
+                              <div class="profile_wrap"> 
+                                <a href={{item.u_id}} target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                </a>
+                              </div>
+                              <div class="username">
+                                <p>
+                                  <a href={{item.u_id}} target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href={{item.u_id}} target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>                       
+                           <span class="t_contents"> <!-- contents -->
+                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                               {{ item.content | urlize:urls | del_media:item.media_url_truncated | safe}} 
+                               {% endwith %}
+                           </span>
+                                                                
+                           <div>
+                               <a href={{item.t_id}} target="_blank"><img class="lazyload content_image" data-src={{item.media_url}} alt="Image"></a>
+                           </div>       
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                           </div>
+                       </td>
+                       {% else %}
+                       <td class="tweet">
+                           <div>
+                              <div class="profile_wrap"> 
+                                <a href={{item.u_id}} target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                </a>
+                              </div>
+                              <div class="username">
+                                <p>
+                                  <a href={{item.u_id}} target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href={{item.u_id}} target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div> 
+                           <span class="t_contents">
+                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                               {{ item.content | urlize:urls | safe }} 
+                               {% endwith %}
+                           </span>                        
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                           </div>
+                       </td>
+
+                       {% endif %}
+                       <td style="vertical-align:top;">
+                           <img class="lazyload logo" data-src={% static 'image/blue.png' %}>
+                       </td>
+                       </blockquote>
+                   </tr>
+                   
+                   {% endfor %}        
+                   <tr>
+                       <td></td>
+                       <td style="text-align: center">                   
+                         <a href="javascript:void(0)" class="open-btn_pn more_content">もっと見る</a>
+                       </td>
+                       <td></td> 
+                   </tr>
+               </tbody>
+            </table>
+                
+        </div>
+        <!-- col-lg-8 -->
+    
+    <div class="col-lg-4">
+    <!--チャート群表示 -->
+    </div>
+    
+  </div>
+  <!-- row -->
+</div>
+<!-- container -->
+
+{% endblock %}
+
+
+{% block javascript %}
+<script>
+// もっと読むボタン　ポジネガ詳細 20件ずつ表示（閉じるボタンはなし
+
+window.onload = function() {
+
+
+let title_list_pn = document.getElementsByClassName("list_pn");
+let openbtn_pn = document.getElementsByClassName("open-btn_pn")[0];
+
+console.log(title_list_pn.length);
+if (title_list_pn.length < 20) {
+  console.log('リスト20未満.');
+  openbtn_pn.hidden = true;  
+  return false;
+}
+
+let hideList_pn = [];
+
+for (let i = 20; i < title_list_pn.length; i++) {
+  hideList_pn.push(title_list_pn[i]);
+  title_list_pn[i].style.display='none';
+}
+console.log(hideList_pn.length);
+
+  
+openbtn_pn.addEventListener('click', function(){
+
+      for (let i = 0; i < 20; i++) {
+      
+        hideList_pn[0].style.display='table-row';
+        hideList_pn.shift();
+        console.log(hideList_pn.length);
+        if (hideList_pn.length == 0) {
+          console.log('これ以上表示データなし')
+          openbtn_pn.hidden = true;
+          break;
+        }
+      }          
+      return false;
+    });  
+
+};
+
+
+</script>
+{% endblock %}

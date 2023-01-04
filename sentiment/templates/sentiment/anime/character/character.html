@@ -1,0 +1,932 @@
+{% extends 'sentiment/anime/base.html' %}
+{% load static %}
+{% load boost %}
+{% load filter %}
+
+{% block title %}{{name}}の評判調査 | プラコメ{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block header %}
+<div class="container p-3">
+    <h2><a href={% url 'character' name %} style="text-decoration:none; color:black;">
+        <span class="sub_titles">{{name}}</span>
+        </a>
+        <a href={% url 'anime' title_name %} style="text-decoration:none; color:black;">
+        <span class="sub_titles">({{title_name}})</span>
+        </a>
+        <span class="period">({{period_start}} ~ {{period_end}} 対象ツイート:{{p_num|add:n_num}}件)</span>
+    </h2>
+    
+<div>
+{% endblock %}
+
+{% block contents %}
+<div class="container">
+    <div class="row">
+
+    
+        <div class="col-lg-8">
+            {% if summarys %}
+            <h3 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">今週のポジティブな感想まとめ</h3>
+            <table class="table table-sm">
+                <thead> 
+                    <tr>
+                        <th></th>
+                        <th class="th_fordesktop"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in summarys %}
+                    <tr>
+                        <td class="summary_p">
+                            <p class="summary_text">{{summary.要約}}</p>
+                            <p class="summary_num">({{summary.投稿数}}ツイート)</p>
+                        </td>
+                        <td class="related_tweet">
+        
+                             <ul class="title_list_p" style="list-style:none;">
+                             {% for item in summary.原文 %} 
+                             <li>
+                                 <table>   
+                                     <tr>
+                                         <blockquote>
+                                         <td class="tweet"> <!-- 0'content', 1't_id', 2's_name', 3'u_id',4'p_image',5'u_name',6'entities_url',7'entities_display_url',8't_date' -->
+                                           <div chass="t_top">
+                                             <div class="profile_wrap"> 
+                                               <a href={{item.u_id}} target="_blank">
+                                                 <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                               </a>
+                                             </div>
+                                             <div class="username">
+                                               <p>
+                                                 <a href={{item.u_id}} target="_blank">
+                                                   {{item.u_name}}
+                                                 </a>
+                                               </p>
+                                               <a href={{item.u_id}} target="_blank">
+                                                 @{{item.s_name}}
+                                               </a>
+                                             </div>
+                                           </div>
+                                           
+                                           <span class="t_contents">
+                                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                                               {{ item.content | urlize:urls | safe }} 
+                                               {% endwith %}
+                                           </span>
+                                           <div class="t_bottom">                        
+                                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                                           </div>
+                                         </td>
+                                         <td style="vertical-align:top;">
+                                             <img class="lazyload logo" data-src={% static 'image/blue.png' %}>
+                                         </td>
+                                         </blockquote>
+                                     </tr>
+                                 </table>
+                             </li>
+                             {% endfor %}
+                             </ul>                 
+                             <p class="summary_more"><a href="#" class="open-btn_p">もっと見る</a></p>
+                             <br>
+
+            
+                        </td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            {% if n_summarys %}
+            <h3 style="margin-top:3rem;font-weight:bold;font-size:1.5rem;">今週のネガティブな感想まとめ</h3>
+            <table class="table table-sm">
+                <thead> 
+                    <tr>
+                        <th></th>
+                        <th class="th_fordesktop"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for summary in n_summarys %}
+                    <tr>
+                        <td class="summary_n">
+                            <p class="summary_text">{{summary.要約}}</p>
+                            <p class="summary_num">({{summary.投稿数}}ツイート)</p>
+                        </td>
+                        <td class="related_tweet">
+        
+                             <ul class="title_list_n" style="list-style:none;">
+                             {% for item in summary.原文 %} 
+                             <li>
+                                 <table>   
+                                     <tr>
+                                         <blockquote>
+                                         <td class="tweet"> <!-- 0'content', 1't_id', 2's_name', 3'u_id',4'p_image',5'u_name',6'entities_url',7'entities_display_url',8't_date' -->
+                                           <div chass="t_top">
+                                             <div class="profile_wrap"> 
+                                               <a href={{item.u_id}} target="_blank">
+                                                 <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                               </a>
+                                             </div>
+                                             <div class="username">
+                                               <p>
+                                                 <a href={{item.u_id}} target="_blank">
+                                                   {{item.u_name}}
+                                                 </a>
+                                               </p>
+                                               <a href={{item.u_id}} target="_blank">
+                                                 @{{item.s_name}}
+                                               </a>
+                                             </div>
+                                           </div>
+                                           
+                                           <span class="t_contents">
+                                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                                               {{ item.content | urlize:urls | safe }} 
+                                               {% endwith %}
+                                           </span>
+                                           <div class="t_bottom">                        
+                                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                                           </div>
+                                         </td>
+                                         <td style="vertical-align:top;">
+                                             <img class="lazyload logo" data-src={% static 'image/blue.png' %}>
+                                         </td>
+                                         </blockquote>
+                                     </tr>
+                                 </table>
+                             </li>
+                             {% endfor %}
+                             </ul>                 
+                             <p class="summary_more"><a href="#" class="open-btn_n">もっと見る</a></p>
+                             <br>
+
+            
+                        </td>
+                     </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+    <!-- tweet p2&p1表示-->
+            <br>
+            <h4>ツイート（満足/とても満足） 計{{p_num}}件</h4>
+    
+            <table class="table table-sm">
+           
+               <thead class="thead-light" id="th1">
+               <tr>
+                   <th></th>
+
+                   <th></th>
+                   <th></th>
+
+           
+               </tr>
+               </thead>
+           
+           
+               <tbody id="tb_p">
+
+                   {% for item in p_data %}
+                   <tr>
+                   <!--<td><img src={% static 'image/positive.PNG' %} width="20px" height="20px" alt="positive"</td>-->
+                       {% if item.s_class == 3 %}
+                       <!--<td class="align-middle"><i class="far fa-smile-beam fa-2x img-fluid"></i></td>-->
+                       <td><i class="far fa-smile-beam fa-2x img-fluid"></i><br>(ポジティブ)</td>
+                       {% else %}
+                       <!--<td class="align-middle"><i class="far fa-laugh-squint fa-2x img-fluid"></i></td>-->
+                       <td><i class="far fa-laugh-squint fa-2x img-fluid"></i><br>(とてもポジティブ)</td>
+                       {% endif %}
+                     
+                       <!--
+                       {% with template=item.u_id|add:"/photo" %}
+                       <td><img src={{template}} crossorigin="anonymous" alt="Grape"></td>
+                       {% endwith %}-->
+                       <blockquote>
+                       {% if item.media_url %}
+                       <td class="tweet">
+                           <div>
+                              <div class="profile_wrap"> 
+                                <a href={{item.u_id}} target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                </a>
+                              </div>
+                              <div class="username">
+                                <p>
+                                  <a href={{item.u_id}} target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href={{item.u_id}} target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>
+                           <span class="t_contents"> <!-- contents -->
+                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                               {{ item.content | urlize:urls | del_media:item.media_url_truncated | safe}} 
+                               {% endwith %}
+                           </span>
+                           <div>
+                               <a href={{item.t_id}} target="_blank"><img class="lazyload content_image" data-src={{item.media_url}} alt="Image"></a>
+                           </div>       
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                           </div>
+                                     
+                       </td>
+                       {% else %}
+                       <td class="tweet">
+                           <div>
+                              <div class="profile_wrap"> 
+                                <a href={{item.u_id}} target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                </a>
+                              </div>
+                              <div class="username">
+                                <p>
+                                  <a href={{item.u_id}} target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href={{item.u_id}} target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>
+                           <span class="t_contents">
+                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                               {{ item.content | urlize:urls | safe }} 
+                               {% endwith %}
+                           </span>
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                           </div>
+                       </td>
+
+                       {% endif %}
+                       <!-- tweet logo -->
+                       <td style="vertical-align:top;">
+                           <img class="lazyload logo" data-src={% static 'image/blue.png' %}>
+                       </td>
+                       </blockquote>
+                   </tr>             
+
+                   {% endfor %}
+               </tbody>
+            </table>
+         
+           
+        <!-- n1&n2 ----------->
+            <br>
+            <h4>不満/とても不満ツイート 計{{n_num}}件</h4>
+            <table class="table table-sm">
+           
+               <thead class="thead-light" id="th2">
+               <tr>
+                   <th></th>
+
+                   <th></th>
+                   <th></th>
+
+           
+               </tr>
+               </thead>
+           
+           
+               <tbody id="tb_n">
+                   {% for item in n_data %}
+                   <tr>
+                   <!--<td><img src={% static 'image/positive.PNG' %} width="20px" height="20px" alt="positive"</td>-->
+                       {% if item.s_class == 0 %}
+                       <!--<td class="align-middle"><i class="far fa-tired fa-2x img-fluid"></i></td>-->
+                       <td><i class="far fa-tired fa-2x img-fluid"></i><br>(結構ネガティブ)</td>
+                       {% else %}
+                       <!--<td class="align-middle"><i class="far fa-grin-beam-sweat fa-2x img-fluid"></i></td>-->
+                       <td class="align-middle"><i class="far fa-grin-beam-sweat fa-2x img-fluid"></i><br>(ちょっとネガティブ)</td>
+                       {% endif %}
+                     
+                       <!--
+                       {% with template=item.u_id|add:"/photo" %}
+                       <td><img src={{template}} crossorigin="anonymous" alt="Grape"></td>
+                       {% endwith %}-->
+                       <blockquote>
+                       {% if item.media_url %}
+                       <td class="tweet">
+                           <div>
+                              <div class="profile_wrap"> 
+                                <a href={{item.u_id}} target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                </a>
+                              </div>
+                              <div class="username">
+                                <p>
+                                  <a href={{item.u_id}} target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href={{item.u_id}} target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>
+                           <span class="t_contents"> <!-- contents -->
+                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                               {{ item.content | urlize:urls | del_media:item.media_url_truncated | safe}} 
+                               {% endwith %}
+                           </span>
+                           <div>
+                               <a href={{item.t_id}} target="_blank"><img class="lazyload content_image" data-src={{item.media_url}} alt="Image"></a>
+                           </div>                          
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                           </div>
+                       </td>
+                       {% else %}
+                       <td class="tweet">
+                           <div>
+                              <div class="profile_wrap"> 
+                                <a href={{item.u_id}} target="_blank">
+                                  <img class="lazyload trim-image-to-circle" data-src={{item.p_image}}>
+                                </a>
+                              </div>
+                              <div class="username">
+                                <p>
+                                  <a href={{item.u_id}} target="_blank">
+                                    {{item.u_name}}
+                                  </a>
+                                </p>
+                                <a href={{item.u_id}} target="_blank">
+                                  @{{item.s_name}}
+                                </a>
+                              </div>
+                           </div>
+                           <span class="t_contents">
+                               {% with urls=item.entities_url|join_comma:item.entities_display_url %}
+                               {{ item.content | urlize:urls | safe }} 
+                               {% endwith %}
+                           </span>                        
+                           <div class="t_bottom">                        
+                               <a href="https://twitter.com/intent/tweet?in_reply_to={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/reply-action_0.png' %} alt="reply"></a>&nbsp;
+                               <a href="https://twitter.com/intent/retweet?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/retweet-action.png' %} alt="retweet"></a>&nbsp;
+                               <a href="https://twitter.com/intent/like?tweet_id={{item.t_id_char}}"><img class="lazyload actions" data-src={% static 'image/like-action.png' %} alt="like"></a>&nbsp;
+                               <a href={{item.t_id}} target="_blank">{{item.t_date}}</a>
+                           </div>
+                       </td>
+
+                       {% endif %}
+                       <!-- tweet logo -->
+                       <td style="vertical-align:top;">
+                           <img class="lazyload logo" data-src={% static 'image/blue.png' %}>
+                       </td>
+                       </blockquote>
+                   </tr>
+
+                  {% endfor %}
+               </tbody>
+            </table>
+                
+        </div>
+     
+    
+    <div class="col-lg-4">
+<!--チャート群表示 -->
+
+<!--wordcloud -->
+            <div style="margin-top:3rem; margin-bottom:2rem;"> 
+              <h3 style="text-align: center; font-weight:bold; font-size:1.5rem;">
+                {{name}}について思っていること
+              </h3>
+            </div>
+            {% with address="image/wordcloud/result/character/"|add:name %}
+            {% with filename=address|add:'_wc.webp' %}
+            <img class="lazyload wordcloud img-fluid" data-src={% static filename %} alt="wordcloud">
+
+
+            {% endwith %}
+            {% endwith %}
+            <hr>
+            <div>
+                <h3 style="text-align: center; font-weight:bold; font-size:1.5rem;">
+                  頻出語
+                </h3>
+                <p>
+                {% for freq in frequentwords %}
+                {% if forloop.last %}
+                  {{freq.0}}({{freq.1}})
+                {% else %}
+                  {{freq.0}}({{freq.1}}),
+                {% endif %}
+                {% endfor %}
+                </p>           
+            
+            </div>            
+            <!-- buffaから出力-->
+            <!--<img src="data:image/png;base64,{{fname}}", alt="">-->
+            <hr>
+            <div class="canvas-container-pie">  
+            <canvas id="myPieChart"></canvas>
+            </div>
+            <hr>
+            <div class="canvas-container-bar">  
+            <canvas id="tweets_bydate"></canvas>
+            </div>
+        <!--
+
+            <canvas id="trend_chart"></canvas>
+
+        -->    
+
+            <br>
+            {% if events %}
+            <table class="table table-hover newstable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:12rem;">日付</th>
+                        <th style="width:5rem;"></th>
+                        <th>1週間のニュース</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{event.date}}</td>
+                        <td>{{event.weekday}}</td>
+                        <td><a href={{event.url}} target="_blank">{{event.title}}</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% endif %}
+
+            {% if trend_word %}
+              <div class="canvas-container-bar">  
+                <canvas id="trend_chart"></canvas>
+              </div>
+              <br>
+            {% endif %}
+              <div>
+                <p>
+                {% for t, c in trend_word|zip:trend_word_count %}
+                {% if forloop.last %}
+                  {{t}}({{c}})
+                {% else %}
+                  {{t}}({{c}}),
+                {% endif %}
+                {% endfor %}
+                </p>
+              </div>
+              
+              <div class="canvas-container-bar">  
+              <canvas id="location_chart"></canvas>
+              </div>
+
+            <!-- 類似キャラクター -->
+            <!-- Swiper -->
+            {% if relates %}
+            <br>
+            <hr>
+            <h4 class="p-4" style="text-align:center;font-family:'Noto Sans JP';font-weight:bold;">
+              類似キャラクター
+            </h4> 
+            <!-- Swiper -->
+            <div class="swiper mySwiper">
+              <div class="swiper-wrapper">
+
+                {% for t in relates %}
+                <div class="swiper-slide">
+                    <div class="card">
+                      <div class="card-body ranking-side">
+                        
+                        <a href={% url 'character' t.brand %} class="no_underbar">
+                          <p class="card-title">{{t.brand}}</p>
+                        </a>
+
+                        <p class="card-subtitle">ポジティブな投稿数:{{t.pcount}}</p>                              
+                        <hr>
+                        
+        
+                      </div>                        
+                      <div class="bg-image hover-overlay ripple" data-mdb-ripple-color="light">
+                        <a href={% url 'character' t.brand %}>
+                        {% with address="image/wordcloud/result/character/"|add:t.brand %}
+                        {% with filename=address|add:'_wc.webp' %}
+                        <img class="lazyload img-fluid" data-src={% static filename %} alt={{t.brand}}>
+                        {% endwith %}
+                        {% endwith %}
+                        </a>
+                       
+                      </div>
+
+                    <!-- card -->
+                    </div>
+                <!--swiper-slide -->
+                </div>
+                {% endfor %}
+
+              <!--swiper-wrapper -->
+              </div>
+            <!--mySwiper -->
+            </div>            
+            {% endif %}    
+                          
+        </div>
+    
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+    // pieラベル名＋%表示させる
+    var dataLabelPlugin = {
+        afterDatasetsDraw: function (chart, easing) {
+            // To only draw at the end of animation, check for easing === 1
+            var ctx = chart.ctx;
+
+            chart.data.datasets.forEach(function (dataset, i) {
+                var dataSum = 0;
+                dataset.data.forEach(function (element){
+                    dataSum += element;
+                });
+
+                var meta = chart.getDatasetMeta(i);
+                if (!meta.hidden) {
+                    meta.data.forEach(function (element, index) {
+                        // Draw the text in black, with the specified font
+                        ctx.fillStyle = 'rgb(255, 255, 255)';
+
+                        var fontSize = 12;
+                        var fontStyle = 'normal';
+                        var fontFamily = 'Helvetica Neue';
+                        ctx.font = Chart.helpers.fontString(fontSize, fontStyle, fontFamily);
+
+                        // Just naively convert to string for now
+                        //var labelString = chart.data.labels[index];
+                        var dataString = Math.round((dataset.data[index] / dataSum) * 100).toString() + "%";
+
+                        // Make sure alignment settings are correct
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+
+                        var padding = 5;
+                        var position = element.tooltipPosition();
+                        //ctx.fillText(labelString, position.x, position.y - (fontSize / 2) - padding);
+                        ctx.fillText(dataString, position.x, position.y + (fontSize / 2) - padding);
+                    });
+                }
+            });
+        }
+    };    
+    //=========== ポジネガ円グラフ ============//
+      
+    var pie_ctx = document.getElementById('myPieChart');
+
+    var pie_chart = new Chart(pie_ctx,{
+    type:'pie',//グラフのタイプ
+    
+    data:{
+            datasets: [{
+                data: [{{p2_counts.0}}+{{p2_counts.1}}+{{p2_counts.2}}+{{p2_counts.3}}+{{p2_counts.4}}+{{p2_counts.5}}+{{p2_counts.6}},
+                       {{p1_counts.0}}+{{p1_counts.1}}+{{p1_counts.2}}+{{p1_counts.3}}+{{p1_counts.4}}+{{p1_counts.5}}+{{p1_counts.6}},
+                       {{n1_counts.0}}+{{n1_counts.1}}+{{n1_counts.2}}+{{n1_counts.3}}+{{n1_counts.4}}+{{n1_counts.5}}+{{n1_counts.6}},
+                       {{n2_counts.0}}+{{n2_counts.1}}+{{n2_counts.2}}+{{n2_counts.3}}+{{n2_counts.4}}+{{n2_counts.5}}+{{n2_counts.6}}
+                       ],
+                       
+                backgroundColor: ['#1E90FF','#00BFFF','#E9967A','#DB7093']
+            }],
+    
+            // These labels appear in the legend and in the tooltips when hovering different arcs
+            labels: [
+                'とても満足',
+                '満足',
+                '不満',
+                'とても不満'
+            ]
+    },
+   
+    options:{//グラフのオプション
+      //maintainAspectRatio: false,//CSSで大きさを調整するため、自動縮小をさせない
+      maintainAspectRatio: false,
+      responsive: true,
+
+      legend:{
+        display: true,
+      },
+      title:{//上部タイトル表示の設定
+        display: true,
+        fontSize:17,
+        text: '1週間の満足度',
+      },
+
+    
+    },
+    plugins: [dataLabelPlugin], // パーセント表示させるプラグイン https://beiznotes.org/show-percentage-on-chart-js/
+
+    });
+      
+
+
+    // -----------ツイート数折れ線グラフ------------
+    const tweet_point = JSON.parse('{{pn_counts_date|safe}}');
+                
+     // 折れ線グラフ表示
+      var tweets_ctx = document.getElementById('tweets_bydate').getContext('2d');
+      var tweets_chart = new Chart(tweets_ctx, {
+          type: 'line',
+      
+          // データを指定
+          data: {      
+                labels: [tweet_point[0],tweet_point[1],tweet_point[2],tweet_point[3],tweet_point[4],tweet_point[5],tweet_point[6]],
+     
+              datasets: [{
+                  label: '満足/とても満足',
+                  borderColor: 'rgb(75, 192, 192)',
+                  lineTension: 0, //折れ線
+                  fill: false,
+                  data: [{{p1_counts.0}}, {{p1_counts.1}}, {{p1_counts.2}}, {{p1_counts.3}}, {{p1_counts.4}}, {{p1_counts.5}}, {{p1_counts.6}}]
+     
+              },{
+                  label: '不満/とても不満',
+                  borderColor: 'red',
+                  fill: false,
+                  lineTension: 0, //折れ線
+                  data: [{{n1_counts.0}}, {{n1_counts.1}}, {{n1_counts.2}}, {{n1_counts.3}}, {{n1_counts.4}}, {{n1_counts.5}}, {{n1_counts.6}}]
+     
+              }
+              ]
+          },
+      
+          // 設定はoptionsに記述
+          options: {
+              maintainAspectRatio: false,
+              responsive: true,          
+            //タイトル
+            title: {
+              display: true,
+              fontSize:17,
+              text: '１週間のツイート数'
+            },
+            legend:{
+              display:true,//グラフの説明を表示
+            },
+            scales: {
+              yAxes: [
+                {
+                scaleLabel: {
+                  display: true,                // 表示設定
+                  labelString: 'Tweets',    // ラベル'Tweets'
+                }
+                }
+              ]
+            },
+            tooltips: {
+                mode: 'nearest',
+                intersect: false,
+            }
+          }
+     });
+
+    
+
+    // -------------トレンドグラフ---------
+      
+        var trend_ctx = document.getElementById('trend_chart');
+
+                  
+        var data_trend = {
+            labels: ["{{trend_word.0}}", "{{trend_word.1}}", "{{trend_word.2}}","{{trend_word.3}}","{{trend_word.4}}","{{trend_word.5}}","{{trend_word.6}}","{{trend_word.7}}","{{trend_word.8}}","{{trend_word.9}}"],
+            datasets: [{
+                label: 'posts',
+                data: [{{trend_word_count.0}}, {{trend_word_count.1}}, {{trend_word_count.2}}, {{trend_word_count.3}}, {{trend_word_count.4}}, {{trend_word_count.5}}, {{trend_word_count.6}}, {{trend_word_count.7}}, {{trend_word_count.8}}, {{trend_word_count.9}}],
+                fontSize:13,
+                backgroundColor: 'rgba(75,192,192,0.4)'
+            }]
+        };
+        
+        var options_trend = {
+     
+                //タイトル
+            title: {
+              display: true,
+              fontSize:17,
+              text: '{{name}}のトレンドTOP10'
+            },
+            indexAxis: 'y',
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        min: 0
+                    }
+                }]
+            },
+            legend:{
+              display:false,//グラフの説明を表示
+            },
+            maintainAspectRatio: false,
+            responsive: true,            
+        };
+        
+        var trend_chart = new Chart(trend_ctx, {
+            type: 'horizontalBar',
+            data: data_trend,
+            options: options_trend
+        });
+
+    // -------------locationグラフ---------
+      
+        var location_ctx = document.getElementById('location_chart');
+
+                  
+        var data_location = {
+            labels: ["{{locations.0.0}}", "{{locations.1.0}}", "{{locations.2.0}}","{{locations.3.0}}","{{locations.4.0}}","{{locations.5.0}}","{{locations.6.0}}","{{locations.7.0}}","{{locations.8.0}}","{{locations.9.0}}"],
+            datasets: [{
+                label: 'posts',
+                data: [{{locations.0.1}}, {{locations.1.1}}, {{locations.2.1}}, {{locations.3.1}}, {{locations.4.1}}, {{locations.5.1}}, {{locations.6.1}}, {{locations.7.1}}, {{locations.8.1}}, {{locations.9.1}}],
+                fontSize:13,
+                backgroundColor: 'rgba(75,192,192,0.4)'
+            }]
+        };
+     
+        var options_location = {
+                //タイトル
+            title: {
+              display: true,
+              fontSize:17,
+              text: '{{name}}が人気のある地域TOP10'
+            },
+            indexAxis: 'y',
+            scales: {
+                xAxes: [{
+                    ticks: {
+                        min: 0
+                    }
+                }]
+            },
+            legend:{
+              display:false,//グラフの説明を表示
+            },
+            maintainAspectRatio: false,
+            responsive: true,            
+        };
+        
+        var location_chart = new Chart(location_ctx, {
+            type: 'horizontalBar',
+            data: data_location,
+            options: options_location
+        });        
+</script>
+<script>
+
+
+// もっと読むボタン
+window.onload = function() {
+  //複数のdiv要素に動的なidをつける
+    let moji_p = "list_positive"
+    let moji2_p = "btn_positive"
+    let moji3_p = "sum_positive"
+    let title_list_p = document.getElementsByClassName("title_list_p");
+    let btn_p = document.getElementsByClassName("open-btn_p");
+    let sum_p = document.getElementsByClassName("summary_p");
+
+    for (let j=0;j<=sum_p.length-1;j++){
+        //各要約にid追加
+        sum_p[j].setAttribute("id",moji3_p+j);
+    }
+    for(let k=0;k<=title_list_p.length-1;k++){
+        //各要約の投稿,buttonにid追加
+        title_list_p[k].setAttribute("id",moji_p+k);
+        btn_p[k].setAttribute("id",moji2_p+k);
+        let hide_p = document.getElementById(moji_p+k).children;
+          
+        let hideList_p = [];
+        for (let i = 3; i < hide_p.length; i++) {
+          hideList_p.push(hide_p[i]);
+          hide_p[i].style.display='none';
+        }
+    
+        let openbtn_p = btn_p[k];
+        openbtn_p.setAttribute("href","#"+moji3_p+k);// summary[k]に飛ぶようにする
+      
+        openbtn_p.addEventListener('click', function(){
+            if (hideList_p[0].style.display == 'none') {
+              for (let i = 0; i < hideList_p.length; i++) {
+                hideList_p[i].style.display = 'block';
+              }
+              openbtn_p.textContent=('閉じる');
+            } else {
+              for (let i = 0; i < hideList_p.length; i++) {
+                hideList_p[i].style.display = 'none';
+              }　　     
+    
+              openbtn_p.textContent=('もっと見る');
+            }
+            return false;
+        });  
+    
+        let num_p = hide_p.length;
+        if (num_p <= 3) {
+          openbtn_p.hidden = true;
+        };
+    };
+
+// ネガティブ要約も同様
+    let moji_n = "list_negative"
+    let moji2_n = "btn_negative"
+    let moji3_n = "sum_negative"
+    let title_list_n = document.getElementsByClassName("title_list_n");
+    let btn_n = document.getElementsByClassName("open-btn_n");
+    let sum_n = document.getElementsByClassName("summary_n");
+
+    for (let j=0;j<=sum_n.length-1;j++){
+        //各要約にid追加
+        sum_n[j].setAttribute("id",moji3_n+j);
+    }
+    for(let k=0;k<=title_list_n.length-1;k++){
+        //各要約の投稿,buttonにid追加
+        title_list_n[k].setAttribute("id",moji_n+k);
+        btn_n[k].setAttribute("id",moji2_n+k);
+        let hide_n = document.getElementById(moji_n+k).children;
+          
+        let hideList_n = [];
+        for (let i = 3; i < hide_n.length; i++) {
+          hideList_n.push(hide_n[i]);
+          hide_n[i].style.display='none';
+        }
+    
+        let openbtn_n = btn_n[k];
+        openbtn_n.setAttribute("href","#"+moji3_n+k);// summary[k]に飛ぶようにする
+      
+        openbtn_n.addEventListener('click', function(){
+            if (hideList_n[0].style.display == 'none') {
+              for (let i = 0; i < hideList_n.length; i++) {
+                hideList_n[i].style.display = 'block';
+              }
+              openbtn_n.textContent=('閉じる');
+            } else {
+              for (let i = 0; i < hideList_n.length; i++) {
+                hideList_n[i].style.display = 'none';
+              }　　     
+    
+              openbtn_n.textContent=('もっと見る');
+            }
+            return false;
+        });  
+    
+        let num_n = hide_n.length;
+        if (num_n <= 3) {
+          openbtn_n.hidden = true;
+        };
+    };
+};
+
+
+</script>
+<!-- Initialize Swiper -->
+<script>
+  var swiper = new Swiper(".mySwiper", {
+    //slidesPerView: 4,
+    //spaceBetween: 20,
+    freeMode: true,
+    autoplay: {
+      delay: 10000, //7秒後に移動
+      disableOnInteraction: false,
+    },
+    breakpoints: {
+      480: {
+        slidesPerView: 2,
+        spaceBetween: 10,
+      },
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 10,
+      },
+      1024: {
+        slidesPerView: 2,
+        spaceBetween: 10,
+      },
+    },
+  });
+</script>
+
+{% endblock %}
