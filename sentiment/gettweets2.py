@@ -182,9 +182,8 @@ def collect_tweet_realtime(query,lang):
     entities_urls=[]
     entities_display_urls=[]
 
+    http_mention_r=re.compile(r'https?://[^\s]+|(@[a-zA-Z_0-9]+)')
 
-    https_r = re.compile(r'https*://[^\s]+')
-    mention_r = re.compile(r'[@＠][a-zA-Z_0-9]+')
     bot_r = re.compile(r'(bot)|(BOT)')
     
     spam_r = ['質問箱']
@@ -194,143 +193,175 @@ def collect_tweet_realtime(query,lang):
 
     #print("query:",query)
     cnt = 0 # 成功数
-
-# tweet取得(1回のみ)
-    try:
-        statuses = twitter.search(q=query,tweet_mode="extended",count=100)["statuses"]
-    except twython.exceptions.TwythonError as e:
-        print(e)
-        return '{0}'.format(e)
-
-    if len(statuses)==0:
-        print("No tweets found.")
-        return 'No tweets found.'
-
-
-    #print("\nTweets(API):",len(statuses))
-
-    for status in statuses:
-
-        if len(status["full_text"])>140:
-            #print("a",end="")
-            continue
-        if status["truncated"] == True:
-            #print("b",end="")
-            continue
-        if len(status["entities"]["urls"]) > 1:
-            #print("c",end="")
-            continue
-        if status['entities'].get('media')!=None:
-            if len(status['entities']['media']) > 1:
-                #print("d",end="")
-                continue
-            else:
-                media_urls_truncated.append(status['entities']['media'][0]['url'])
-                media_urls.append(status['entities']['media'][0]['media_url_https'])
-        else:
-            media_urls.append(None)
-            media_urls_truncated.append(None)
-        id_str = status["id_str"]
-        screen_name = status["user"]["screen_name"]
-        s_names.append(screen_name)
-        t_ids.append("https://twitter.com/"+screen_name+"/status/"+id_str)
-        u_ids.append("https://twitter.com/"+screen_name)
-        texts.append(status["full_text"])
-        u_names.append(status["user"]["name"])
-        p_images.append(status["user"]["profile_image_url_https"])
-        verifieds.append(status["user"]["verified"])
-        t_dates.append(utc_to_jtime(status["created_at"]))
-        r_counts.append(status["retweet_count"])
-        f_counts.append(status["favorite_count"])
-        t_id_chars.append(id_str)
-
-        if len(status["entities"]["urls"])==0:
-            entities_urls.append(None)
-            entities_display_urls.append(None)
-        else:
-            entities_urls.append(status["entities"]["urls"][0]["url"])
-            entities_display_urls.append(status["entities"]["urls"][0]["display_url"])
-
-        # retweet投稿
-        if status.get("retweeted_status")==None:
-            retweeted.append(False)
-        else:
-            retweeted.append(True)
-        # 位置(profile上)
-        locations.append(status["user"]["location"])
-        # 全ハッシュタグ取得
-        hashtags_temp=[]
-        for hashtag in status['entities']['hashtags']:
-            hashtags_temp.append(hashtag['text'])
-        hashtags.append(hashtags_temp)
-
-
-#センチメントクラス取得
-    s_classes = bunruiki.label_predict(texts,bert=True) # 内部で正規処理
-    #s_classes = [2 for t in range(len(texts))]
-
-#データベースに保存
-    #print("Saving to database...")
-
-    for t_id,u_id,t_date,text,s_name,r_count,f_count,media_url,media_url_truncated,ret,location,hashtag,u_name,p_image,verified,t_id_char,entities_url,entities_display_url,s_class \
-        in zip(t_ids,u_ids,t_dates,texts,s_names,r_counts,f_counts,media_urls,media_urls_truncated,retweeted,locations,hashtags,u_names,p_images,verifieds,t_id_chars,entities_urls,entities_display_urls,s_classes):
-
-
-        # 保存判定用 text前処理
-        text_chk = unicodedata.normalize('NFKC',text.lower())
-        #text_chk = neologdn.normalize(text_chk)# 記号の全角半角統一 (日本語の間or日本語と英字の間のスペースは消える "富岡 義勇"→"富岡義勇". 英語は消えない"abc de"→"abc de")
-        text_chk = mention_r.sub("",https_r.sub("",text_chk)) # mention,urlは除去
-
-        # 保存判定(スパムキーが本文に含まれないか
-        # アカウントにbotが含まれるか。
-        # クラス2ではないか)
-        ##本文にキーが含まれるかの判定はしない(DB検索時にする)
-        if spam_r.search(text_chk) or bot_r.search(s_name + ' ' + u_name) or s_class==2: # botは無視
-            #print("-",end=' ')
-            continue
-
-        #print(t_id)
+    next_id=''
+    # text重複チェック用
+    texts_record=[]
+# tweet取得(max 200twt)
+    for i in range(2):
         try:
-            # update
-            b = Tweetdata3(t_id=t_id,
-                           query=query, # 検索に使った文字列をそのまま保存
-                           s_class=s_class,
-                           u_id=u_id,
-                           t_date=t_date,
-                           content=text,
-                           s_name=s_name,
-                           r_count=r_count,
-                           f_count=f_count,
-                          media_url=media_url,
-                          media_url_truncated=media_url_truncated,
-                          retweeted=ret,
-                          location=location,
-                          hashtag=hashtag,
-                          u_name=u_name,
-                          p_image=p_image,
-                          verified=verified,
-                          t_id_char=t_id_char,
-                          entities_url=entities_url,
-                          entities_display_url=entities_display_url,
-                          lang=lang,
-                          )
-            b.save(force_insert=True) # force_insert指定しないとupdateされる
-            #print("o",end=' ')
-            cnt += 1
-        except DataError as e3:
-            print(e3)
-            print(text)
-        except ValueError as e2:
-            print(e2)
-            print(text)
-        except IntegrityError:
-            pass
-            #print("x",end=' ')
+            if i == 0:
+                statuses = twitter.search(q=query,tweet_mode="extended",count=100)["statuses"]
+            else:
+                statuses = twitter.search(q=query,tweet_mode="extended",max_id=next_id-1,count=100)["statuses"]
+
+        except twython.exceptions.TwythonError as e:
+            print(e)
+            return '{0}'.format(e)
+
+        if len(statuses)==0:
+            #print("No tweets found.")
+            return 'No tweets found.'
 
 
-    #time.sleep(5.00) # 5秒待機 (15分以内に180(or200?)回アクセスすると大量取得エラーのため
+        #print("\nTweets(API):",len(statuses))
 
-    #print('cnt',cnt) # 取得数
+        for status in statuses:
+            # 感情分析に関係しないmentionとhttp除いた文字数が140以下のみ
+            if len(http_mention_r.sub("",status["full_text"]).strip())>140:
+                #print("a",end="")
+                continue
+            if status["truncated"] == True:
+                #print("b",end="")
+                continue
+            if len(status["entities"]["urls"]) > 1:
+                #print("c",end="")
+                continue
+            if status['entities'].get('media')!=None:
+                if len(status['entities']['media']) > 1:
+                    #print("d",end="")
+                    continue
+                else:
+                    media_urls_truncated.append(status['entities']['media'][0]['url'])
+                    media_urls.append(status['entities']['media'][0]['media_url_https'])
+            else:
+                media_urls.append(None)
+                media_urls_truncated.append(None)
+            id_str = status["id_str"]
+            screen_name = status["user"]["screen_name"]
+            s_names.append(screen_name)
+            t_ids.append("https://twitter.com/"+screen_name+"/status/"+id_str)
+            u_ids.append("https://twitter.com/"+screen_name)
+            texts.append(status["full_text"])
+            u_names.append(status["user"]["name"])
+            p_images.append(status["user"]["profile_image_url_https"])
+            verifieds.append(status["user"]["verified"])
+            t_dates.append(utc_to_jtime(status["created_at"]))
+            r_counts.append(status["retweet_count"])
+            f_counts.append(status["favorite_count"])
+            t_id_chars.append(id_str)
+
+            if len(status["entities"]["urls"])==0:
+                entities_urls.append(None)
+                entities_display_urls.append(None)
+            else:
+                entities_urls.append(status["entities"]["urls"][0]["url"])
+                entities_display_urls.append(status["entities"]["urls"][0]["display_url"])
+
+            # retweet投稿
+            if status.get("retweeted_status")==None:
+                retweeted.append(False)
+            else:
+                retweeted.append(True)
+            # 位置(profile上)
+            locations.append(status["user"]["location"])
+            # 全ハッシュタグ取得
+            hashtags_temp=[]
+            for hashtag in status['entities']['hashtags']:
+                hashtags_temp.append(hashtag['text'])
+            hashtags.append(hashtags_temp)
+
+
+
+    #センチメントクラス取得
+        s_classes = bunruiki.label_predict(texts,bert=True) # 内部で正規処理
+        #s_classes = [2 for t in range(len(texts))]
+
+    #データベースに保存
+        #print("Saving to database...")
+
+        for t_id,u_id,t_date,text,s_name,r_count,f_count,media_url,media_url_truncated,ret,location,hashtag,u_name,p_image,verified,t_id_char,entities_url,entities_display_url,s_class \
+            in zip(t_ids,u_ids,t_dates,texts,s_names,r_counts,f_counts,media_urls,media_urls_truncated,retweeted,locations,hashtags,u_names,p_images,verifieds,t_id_chars,entities_urls,entities_display_urls,s_classes):
+
+
+            # 保存判定用 text前処理
+            text_chk = unicodedata.normalize('NFKC',text.lower())
+            #text_chk = neologdn.normalize(text_chk)# 記号の全角半角統一 (日本語の間or日本語と英字の間のスペースは消える "富岡 義勇"→"富岡義勇". 英語は消えない"abc de"→"abc de")
+            text_chk = http_mention_r.sub("",text_chk).strip() # mention,urlは除去
+
+            # 保存判定(スパムキーが本文に含まれないか
+            # アカウントにbotが含まれるか。
+            # クラス2ではないか)
+            # 重複するツイートではないか
+            ##本文にキーが含まれるかの判定はしない(DB検索時にする)
+            if s_class==2 or (spam_r.search(text_chk)) or (bot_r.search(s_name + ' ' + u_name)) or (text_chk in texts_record):
+                continue
+            # 重複チェック用にtext保存
+            texts_record.append(text_chk)
+
+            try:
+                # update
+                b = Tweetdata3(t_id=t_id,
+                               query=query, # 検索に使った文字列をそのまま保存
+                               s_class=s_class,
+                               u_id=u_id,
+                               t_date=t_date,
+                               content=text,
+                               s_name=s_name,
+                               r_count=r_count,
+                               f_count=f_count,
+                              media_url=media_url,
+                              media_url_truncated=media_url_truncated,
+                              retweeted=ret,
+                              location=location,
+                              hashtag=hashtag,
+                              u_name=u_name,
+                              p_image=p_image,
+                              verified=verified,
+                              t_id_char=t_id_char,
+                              entities_url=entities_url,
+                              entities_display_url=entities_display_url,
+                              lang=lang,
+                              )
+                b.save(force_insert=True) # force_insert指定しないとupdateされる
+                #print("o",end=' ')
+                cnt += 1
+            except DataError as e3:
+                print(e3)
+                print(text)
+            except ValueError as e2:
+                print(e2)
+                print(text)
+            except IntegrityError:
+                #print("x",end=' ')
+                pass
+
+
+        if i == 1 or status["id"] == -1:
+            break
+        else:
+            t_ids.clear()
+            s_names.clear()
+            u_ids.clear()
+            texts.clear()
+            t_dates.clear()
+            r_counts.clear()
+            f_counts.clear()
+            media_urls.clear()
+            media_urls_truncated.clear()
+            s_classes.clear()
+            locations.clear()
+            hashtags.clear()
+            retweeted.clear()
+            u_names.clear()
+            p_images.clear()
+            verifieds.clear()    
+            t_id_chars.clear()
+            entities_urls.clear()
+            entities_display_urls.clear()
+
+            next_id=status["id"]
+            time.sleep(3.00) # 3秒待機 (15分以内に180(or200?)回アクセスすると大量取得エラーのため
+
 
     return 'Success!'
 

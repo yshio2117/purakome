@@ -6346,8 +6346,7 @@ def sentiment_demo(request):
         if content_sql != '': #contentから@除外
             #print('content条件あり')
             # ユーザー入力値以外のcontentSQL文を作成
-            sql = """SELECT * from (SELECT DISTINCT ON (content)
-            1 id,
+            sql = """SELECT
             t_id,
             t_date,
             s_name,
@@ -6364,11 +6363,10 @@ def sentiment_demo(request):
             {0} and
             up_date between %(s_date)s and %(e_date)s and
             query = %(query)s
-            ) table1 order by media_url_truncated {1} limit 100""".format(content_sql,"ASC" if media_chk == 'y' else "DESC")
+            order by media_url_truncated {1} limit 200""".format(content_sql,"ASC" if media_chk == 'y' else "DESC")
         else:
             #print('content条件なし')
-            sql = """SELECT * from (SELECT DISTINCT ON (content)
-            1 id,
+            sql = """SELECT
             t_id,
             t_date,
             s_name,
@@ -6384,7 +6382,7 @@ def sentiment_demo(request):
             WHERE
             up_date between %(s_date)s and %(e_date)s and
             query = %(query)s
-            ) table1 order by media_url_truncated {0} limit 100""".format("ASC" if media_chk == 'y' else "DESC")
+            order by media_url_truncated {0} limit 200""".format("ASC" if media_chk == 'y' else "DESC")
 
         #print('sql',sql)
         q_params = {
