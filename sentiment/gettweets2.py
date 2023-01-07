@@ -186,7 +186,7 @@ def collect_tweet_realtime(query,lang):
 
     bot_r = re.compile(r'(bot)|(BOT)')
     
-    spam_r = ['質問箱']
+    spam_r = ['質問箱','交換','譲渡','買取','在庫','完売','価格','割引','お得']
     spam_r = re.compile('|'.join(spam_r))
         
     bunruiki = Bunrui()
@@ -293,10 +293,10 @@ def collect_tweet_realtime(query,lang):
             # クラス2ではないか)
             # 重複するツイートではないか
             ##本文にキーが含まれるかの判定はしない(DB検索時にする)
-            if s_class==2 or (spam_r.search(text_chk)) or (bot_r.search(s_name + ' ' + u_name)) or (text_chk in texts_record):
+            if s_class==2 or (spam_r.search(text_chk)) or (bot_r.search(s_name + ' ' + u_name)) or (text_chk[:40] in texts_record):
                 continue
             # 重複チェック用にtext保存
-            texts_record.append(text_chk)
+            texts_record.append(text_chk[:40])
 
             try:
                 # update

@@ -90,16 +90,29 @@ gtag('config', 'G-NGPST6PSGS');
                     </label>
                 </div>
                 <div class="form-check">
-                    <input class="form-check-input" style="margin-left:1rem;" type="checkbox" value="y" id="media_box" name="media_chk" checked>
-                    <label class="form-check-label" for="media_box">
-                      画像/動画ありツイートを優先表示
-                    </label>
-                </div>
-                <div class="form-check">
                     <input class="form-check-input" style="margin-left:1rem;" type="checkbox" value="y" id="content_box" name="content_chk" checked>
                     <label class="form-check-label" for="content_box">
-                      本文のみ検索する
+                      アカウント名は検索しない
                     </label>
+                </div>
+                <br>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left:1rem;" type="radio" id="all_tweets_radio" name="group_link_radios" value="all_tweets" checked/>
+                  <label class="form-check-label" for="all_tweets_radio">
+                  リンクを含む,含まないツイートの両方を検索する
+                   </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left:1rem;" type="radio" id="only_photos_radio" name="group_link_radios" value="only_photos"/>
+                  <label class="form-check-label" for="only_photos_radio">
+                  画像リンクを含むツイートのみ検索する
+                   </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" style="margin-left:1rem;" type="radio" id="exclude_links_radio" name="group_link_radios" value="exclude_link"/>
+                  <label class="form-check-label" for="exclude_links_radio">
+                  リンクを含むツイートを除外する<br>(スパムが多い場合等に選択してください)
+                   </label>
                 </div>
             </div>
     </form>

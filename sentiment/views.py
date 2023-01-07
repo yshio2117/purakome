@@ -6172,6 +6172,7 @@ def sentiment_demo(request):
         reply_chk = request.POST.get('reply_chk')
         media_chk = request.POST.get('media_chk')
         content_chk = request.POST.get('content_chk')
+        link_chk = request.POST.get('group_link_radios')
         # 正規化(小文字化はしない)
         q = unicodedata.normalize('NFKC',q.strip())
         q = re.sub(r'[ \s]+',' ',q)
@@ -6205,6 +6206,15 @@ def sentiment_demo(request):
         else:
             # 指定なければ日本語検索
             q += " lang:ja"
+
+        if link_chk == 'all_tweets':
+            pass
+        elif link_chk == 'only_photos':
+            if re.search(r'filter:images',q) == None:
+                q += ' filter:images'
+        elif link_chk == 'exclude_link':
+            if re.search(r'\-filter:links',q) == None:
+                q += ' -filter:links'
 
         ###パラメータ１０個超えるようならエラー返す処理記載###
         if len(re.findall(r' ',q)) > 9:
