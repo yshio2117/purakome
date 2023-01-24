@@ -360,7 +360,7 @@ def collect_tweet_realtime(query,lang):
             entities_display_urls.clear()
 
             next_id=status["id"]
-            time.sleep(3.00) # 3秒待機 (15分以内に180(or200?)回アクセスすると大量取得エラーのため
+            time.sleep(1.00) # 3秒待機 (15分以内に180(or200?)回アクセスすると大量取得エラーのため
 
 
     return 'Success!'
@@ -368,5 +368,5 @@ def collect_tweet_realtime(query,lang):
 
 if __name__=='__main__':
 
-    msg=collect_tweet_realtime('犬 猫 lang:ja -filter:retweets',0)
+    msg=collect_tweet_realtime('寒い さむい lang:ja -filter:retweets',0)
     print(msg)

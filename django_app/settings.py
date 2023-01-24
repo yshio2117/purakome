@@ -198,18 +198,18 @@ LOGGING = {
         # Djangoが利用するロガー
         'django': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
         # sentimentが利用するロガー
         'sentiment': {
             'handlers': ['file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
     },
     # ハンドラの設定
     'handlers': {
         'file': {
-            'level': 'DEBUG',#高速化のためDEBUGからERRORに変更20221127
+            'level': 'ERROR',#高速化のためDEBUGからERRORに変更20221127
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename':os.path.join(BASE_DIR,'logs/django.log'),
             'formatter': 'prod',
