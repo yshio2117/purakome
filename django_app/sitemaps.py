@@ -170,9 +170,9 @@ class StaticViewSitemap(Sitemap):
                                00,00,00).replace(tzinfo=JST())
 
         elif obj == 'sentiment_demo':
-            return datetime.datetime(2022,
-                               12,
-                               30,
+            return datetime.datetime(2023,
+                               2,
+                               1,
                                00,00,00).replace(tzinfo=JST())
 
     def location(self, obj):

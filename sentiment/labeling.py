@@ -6,7 +6,7 @@
 import tokenizer
 
 import os, sys, django
-sys.path.append('/home/yusuke/pydir/.myvenv/django_app')
+sys.path.append('/home/yusuke/pydir/purakome')
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_app.settings')  # DJANGO_SETTINGS_MODULEにプロジェクトのsettings.pyのを指定します。
 django.setup()
 

@@ -3,7 +3,7 @@
 {% load boost %}
 {% load filter %}
 
-{% block title %}{% if episode != 0 %}{% if title_tag != None %}{{title_tag}}{% endif %}{{short_name}}{{title_episode}}話のツイッター評価・感想まとめ|アニメぷらこめ{% elif episode == 0 %}{% if title_tag != None %}{{title_tag}}{% endif %}{{short_name}}のツイッター評価・感想まとめ|アニメぷらこめ{% endif %}{% endblock %}
+{% block title %}{% if episode != 0 %}{% if title_tag != None %}{{title_tag}}{% endif %}{{short_name}}{{title_episode}}話の満足度調査|アニメ感情分析ぷらこめ{% elif episode == 0 %}{% if title_tag != None %}{{title_tag}}{% endif %}{{short_name}}の満足度調査|アニメ感情分析ぷらこめ{% endif %}{% endblock %}
 {% block head %}
 {% if episode == 0 %}
 <link rel="canonical" href="https://purakome.net/sentiment/anime/{{name}}/">
@@ -57,7 +57,7 @@
         {% elif title_episode != 0 %}
         第{{title_episode}}話 
         {% endif %}
-        {{title_name}}{% if short_name not in title_name %}({{short_name}}){% endif %} | ツイッターのポジネガ評判まとめ</span>
+        {{title_name}}{% if short_name not in title_name %}({{short_name}}){% endif %} | ツイッター評判・満足度調査</span>
         
     </h1>
         <p class="period">(調査期間:{{period_start|date:"Y年n月j日"}}-{{period_end|date:"n月j日"}} {% if past == False %}対象ツイート:{{data_num}}件 {% endif %})
@@ -317,7 +317,7 @@
                 <h3 style="text-align: left; font-weight:bold; font-size:1.5rem;">
                   キーワード
                 </h3>
-                <h4 style="font-size:1.4rem;">
+                <p style="font-size:1.4rem;">
                 {% for t, c in c.freqs %}
                     {% if t %}
                     {% if c > 1 %}
@@ -346,7 +346,7 @@
                     {% endif %}
                 {% endfor %}
 
-                </h4>
+                </p>
             <hr>
             </div>
             {% endif %}
@@ -905,7 +905,7 @@
                 <h2 style="text-align: center; font-weight:bold; font-size:1.5rem;">
                   {{short_name}}の頻出語
                 </h2>
-                <h3 style="font-size:1.4rem;">
+                <p style="font-size:1.4rem;">
                 {% with word=freqs_obj|slice:"0:50" %}
                 {% with count=freqs_obj|slice:"50:100" %}
                 {% for t, c in word|zip:count %}
@@ -935,7 +935,7 @@
                 {% endfor %}
                 {% endwith %}
                 {% endwith %}
-                </h3>
+                </p>
             <hr>
             </div>
             {% endif %}

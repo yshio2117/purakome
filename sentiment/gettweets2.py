@@ -3,7 +3,7 @@
 from twython import Twython
 import calendar,time,datetime
 import unicodedata
-
+import MeCab
 import os, sys, django
 
 CONSUMER_KEY = os.environ.get('CONSUMER_KEY')
@@ -11,7 +11,7 @@ CONSUMER_SECRET =os.environ.get('CONSUMER_SECRET')
 ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN')
 ACCESS_TOKEN_SECRET = os.environ.get('ACCESS_TOKEN_SECRET')
 
-sys.path.append('/home/yusuke/pydir/.myvenv/django_app')
+sys.path.append('/home/yusuke/pydir/purakome')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'django_app.settings')  # DJANGO_SETTINGS_MODULEにプロジェクトのsettings.pyのを指定します。
 django.setup()
@@ -140,6 +140,46 @@ def utc_to_jtime(utcstr):
     time_local = time.localtime(unix_time)
     return time.strftime("%Y-%m-%d %H:%M:%S",time_local)
 
+
+def tokenizer_demo(text):
+
+    exclude_words=['ー','ω','m','・','w','ww','www','ん','く','ッ','ら','さ',
+                   'ぁ','ぃ','ぇ','ぅ','ぉ','f','そ','め',
+                   'みる','やる','する','なる','くる','いる','思う',
+                 'いう','よむ','ある','いい','いいね','よい','良い','良き',
+                 'すぎ','過ぎる','すぎる','スギ','めっちゃ','めちゃくちゃ',
+                 '本当','ほんと','ホント','ほんま','超','まじ','マジ','マジで',
+                 '笑']    
+    tagger = MeCab.Tagger(r'-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd -u static/models/wikidump.dic')
+    
+    wakachi = []
+    node = tagger.parseToNode(text) # キャラ名をwordcloudに入れたいのでtokenizer.cleaningは使わない
+    while node:
+        features = node.feature.split(',')
+        if features[0] != 'BOS/EOS':
+            if features[0] == '名詞':
+                if (features[1] == '一般' or
+                    features[1] == '形容動詞語幹' or
+                    features[1] == '固有名詞' or
+                    features[1] == 'サ変接続'):
+
+                    token = features[6] if features[6] != '*' else node.surface
+                    wakachi.append(token)
+
+            elif features[0] == '形容詞' and features[1] == '自立':
+                token = features[6] if features[6] != '*' else node.surface
+                wakachi.append(token)
+            elif features[0] == '動詞' and features[1] == '自立':
+                token = features[6] if features[6] != '*' else node.surface
+                wakachi.append(token)
+
+        node = node.next
+
+    wakachi = [w for w in wakachi if w not in exclude_words]
+    # DB用に空白区切りの文字列に変換
+    wakachi = ' '.join(list(set(wakachi)))[:280]
+    
+    return wakachi
 
 
 def collect_tweet_realtime(query,lang):
@@ -297,6 +337,8 @@ def collect_tweet_realtime(query,lang):
                 continue
             # 重複チェック用にtext保存
             texts_record.append(text_chk[:40])
+            # 形態素解析
+            wakachi = tokenizer_demo(text_chk)
 
             try:
                 # update
@@ -320,6 +362,7 @@ def collect_tweet_realtime(query,lang):
                               t_id_char=t_id_char,
                               entities_url=entities_url,
                               entities_display_url=entities_display_url,
+                              wakachi=wakachi,
                               lang=lang,
                               )
                 b.save(force_insert=True) # force_insert指定しないとupdateされる
@@ -368,5 +411,5 @@ def collect_tweet_realtime(query,lang):
 
 if __name__=='__main__':
 
-    msg=collect_tweet_realtime('寒い さむい lang:ja -filter:retweets',0)
+    msg=collect_tweet_realtime('水道管 lang:ja -filter:retweets',0)
     print(msg)

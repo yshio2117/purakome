@@ -71,7 +71,7 @@ SECRET_KEY = get_secret('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['purakome.com','purakome.net',os.environ.get('ALLOWED_HOSTS')]
+ALLOWED_HOSTS = ['purakome.net',os.environ.get('ALLOWED_HOSTS')]
 
 RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
 RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')

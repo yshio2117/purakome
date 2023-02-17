@@ -6,10 +6,10 @@ import urllib.parse, datetime
 from django.utils.text import slugify
 
 summer_weeks = [
-                'kanokari',
-                  'kami-kuzu',
-                  'lycoris-recoil',
-                  'rwby',
+        'kanokari',
+        'kami-kuzu',
+        'lycoris-recoil',
+        'rwby',
         'engage-kiss',
         'utawarerumono',
         'luminous',

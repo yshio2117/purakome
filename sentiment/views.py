@@ -22,6 +22,11 @@ warnings.filterwarnings('ignore')
 from .gettweets2 import collect_tweet_realtime
 from django.utils import timezone
 
+#wordcloud
+from wordcloud import WordCloud
+from PIL import Image
+import io,base64
+
 SPC = re.compile("-")
 MIN_SHOW = 100 # ページ最小表示数(pcount)
 STV = re.compile(r"処女|チンポ|ちんちん|ちんこ|ちんぽ|きんたま|アナル|陰部|オナホ|シコり|シコる|シコれ|シコった|キチガイ|ガイジ|殺す|殺せ|殺し|殺さ|殺そ|ころす|ころせ|ころした|死ね|おっぱい|オッパイ|まんこ|マンコ|オナニ|射精|風俗")
@@ -91,9 +96,8 @@ def safetext(text):
 
 def index(request):
     
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
-        #return redirect(r'https://purakome.net/sentiment/anime/',permanent=True)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
 
 # 最新記事
     autumn_l = [
@@ -388,12 +392,9 @@ def index(request):
 
 
 def search(request):
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
  
-    #return HttpResponse(status=410)
-    #raise Http404("Page does not exist.")    
-
     key = request.GET.get('q')
     #print('q:',key)
     key_forsearch = unicodedata.normalize('NFKC',key.lower()).strip() # 正規化
@@ -499,8 +500,8 @@ def anime_weeks(request,name):
         return HttpResponse(status=410)
         raise Http404("Page does not exist.") 
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
+#    if request.META.get("HTTP_HOST") == r'purakome.com':
+#        return HttpResponse(status=410)
    
     if record['past'] == True: # 春アニメはweeksが無いのでepisode=0を表示
         return anime_episode(request,name,0)
@@ -899,10 +900,9 @@ def j_event(request,name,episode=0):
         raise Http404("Page does not exist.")
     
 ### purakome.com to purakome.net    
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
-        #return redirect(r'https://purakome.net/sentiment/anime/{0}/'.format(name),permanent=True)
-####
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
+###
 
     #print('requestpath',request.path) # 春アニメで sentiment/anime/kimetsu/0/でアクセスできてしまうのを防ぐ
     if episode == 0 and request.path[-3:] == r'/0/':
@@ -2230,10 +2230,9 @@ def anime_episode2(request,name,episode=0):
         raise Http404("Page does not exist.")
     
 ### purakome.com to purakome.net    
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
-        #return redirect(r'https://purakome.net/sentiment/anime/{0}/'.format(name),permanent=True)
-####
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
+###
 
     #print('requestpath',request.path) # 春アニメで sentiment/anime/kimetsu/0/でアクセスできてしまうのを防ぐ
     if episode == 0 and request.path[-3:] == r'/0/':
@@ -3629,10 +3628,9 @@ def anime_episode(request,name,episode=0):
         raise Http404("Page does not exist.")
     
 ### purakome.com to purakome.net    
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
-        #return redirect(r'https://purakome.net/sentiment/anime/{0}/'.format(name),permanent=True)
-####
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
+###
 
     #print('requestpath',request.path) # 春アニメで sentiment/anime/kimetsu/0/でアクセスできてしまうのを防ぐ
     if episode == 0 and request.path[-3:] == r'/0/':
@@ -5039,10 +5037,9 @@ def showdetail(request,name,episode=0):
 
 
 ### purakome.com to purakome.net    
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
-        #return redirect(r'https://purakome.net/sentiment/anime/{0}/'.format(name),permanent=True)
-####
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
+###
 
 
     try:
@@ -5713,26 +5710,24 @@ class InquiryView(generic.FormView):
 
 def sitepolicy(request):
     
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return redirect(r'https://purakome.net/sentiment/sitepolicy/',permanent=True)
-    #return HttpResponse(status=410)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return redirect(r'https://purakome.net/sentiment/sitepolicy/',permanent=True)
 
     return render(request,'sentiment/sitepolicy.html')
 
 
 def aboutus(request):
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return redirect(r'https://purakome.net/sentiment/aboutus/',permanent=True)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return redirect(r'https://purakome.net/sentiment/aboutus/',permanent=True)
     
-    #return HttpResponse(status=410)
     return render(request,'sentiment/aboutus.html')
 
 
 def quiz_index(request):
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
 
     questions = []
     answers = []
@@ -5749,8 +5744,8 @@ def quiz_index(request):
 def questions(request, number):
 
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
 
 
     if request.method == 'GET':
@@ -5950,8 +5945,8 @@ def insert_tags(text,key,tag,casemix=True):
             
 def answers(request, number):
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
 
 
     if request.method == 'GET':
@@ -6071,8 +6066,8 @@ def answers(request, number):
 
 def result(request):
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        return HttpResponse(status=410)
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #return HttpResponse(status=410)
 
 
     if request.method == 'GET':
@@ -6129,8 +6124,8 @@ def result(request):
 
 def toppage(request):
 
-    if request.META.get("HTTP_HOST") == r'purakome.com':
-        raise Http404("Page does not exist")
+    #if request.META.get("HTTP_HOST") == r'purakome.com':
+        #raise Http404("Page does not exist")
 
     msg=""
     params = {
@@ -6164,7 +6159,7 @@ def sentiment_demo(request):
                 'n1data':None,
                 'n2data':None,
                 'total':None,
-
+                'fname':None,
                   }
     else:
         q = request.POST.get('talk')
@@ -6177,9 +6172,6 @@ def sentiment_demo(request):
         q = unicodedata.normalize('NFKC',q.strip())
         q = re.sub(r'[ \s]+',' ',q)
         
-        # retweetsは必ず除外
-        if re.search(r"-filter:retweets",q) == None:
-            q += " -filter:retweets"
         # 言語設定
         lang = 0
         if re.search(r"lang:[a-z][a-z]",q):
@@ -6201,12 +6193,17 @@ def sentiment_demo(request):
                           'n1data':None,
                           'n2data':None,
                           'total':0,
+                          'fname':None,
                           }
                 return render(request,'sentiment/sentiment_demo.html',params)
         else:
             # 指定なければ日本語検索
             q += " lang:ja"
 
+        # retweetsは必ず除外
+        if re.search(r"-filter:retweets",q) == None:
+            q += " -filter:retweets"
+ 
         if link_chk == 'all_tweets':
             pass
         elif link_chk == 'only_photos':
@@ -6228,6 +6225,7 @@ def sentiment_demo(request):
                       'n1data':None,
                       'n2data':None,
                       'total':0,
+                      'fname':None,
                       }
             return render(request,'sentiment/sentiment_demo.html',params)
 
@@ -6367,7 +6365,8 @@ def sentiment_demo(request):
             entities_display_url,
             entities_url,
             media_url,
-            media_url_truncated
+            media_url_truncated,
+            wakachi
             FROM sentiment_tweetdata3
             WHERE
             {0} and
@@ -6387,7 +6386,8 @@ def sentiment_demo(request):
             entities_display_url,
             entities_url,
             media_url,
-            media_url_truncated
+            media_url_truncated,
+            wakachi
             FROM sentiment_tweetdata3
             WHERE
             up_date between %(s_date)s and %(e_date)s and
@@ -6412,6 +6412,7 @@ def sentiment_demo(request):
         p1data = []
         n1data = []
         n2data = []
+        all_wakachi = ''
         for r in result:
             if r.s_class == 3:
                 p1data.append(r)
@@ -6422,6 +6423,36 @@ def sentiment_demo(request):
             else:
                 n2data.append(r)
 
+            if r.wakachi != '': 
+                all_wakachi += r.wakachi + ' '
+
+        wordcloud = WordCloud(colormap='brg',
+                              width=250,
+                              height=250,
+                              min_font_size=8,
+                              #max_font_size=100,
+                              max_words=50, # top50のみ表示
+                              relative_scaling=0,
+                              contour_width=0.001,
+                              contour_color='powderblue',
+                              font_path=r"/usr/share/fonts/NotoSansJP-Light.otf",
+                              #mask=mask_array,
+                              background_color='white',
+                              #stopwords=adj_stopwords + noun_stopwords + default_stopwords,
+                              collocations=False)
+
+        wordcloud = wordcloud.generate(all_wakachi) # wakachiはスペース区切りでしか受け付けない
+        # PILで表示する
+        image_array = wordcloud.to_array()
+        img = Image.fromarray(image_array)
+
+        buf = io.BytesIO()
+        img.save(buf,format='png')
+        s = buf.getvalue()
+        s = base64.b64encode(s).decode()
+        buf.close()
+
+
         params = {
             'key':q_only_word, # 単語強調表示用.リストで渡す(大文字小文字区別あり)
             'query':request.POST.get('talk'),
@@ -6431,6 +6462,7 @@ def sentiment_demo(request):
             'n1data':n1data,
             'n2data':n2data,
             'total':len(result),
+            'fname':s,
             }
 
     #print('param',params)

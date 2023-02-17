@@ -12,23 +12,18 @@ gtag('js', new Date());
 
 gtag('config', 'G-NGPST6PSGS');
 </script>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
-
-    <title>ツイッター感情分析ツール | リアルタイムでTwitterのポジネガ検索 | ぷらこめ</title>
+    <title>ツイッター感情分析・エゴサーチツール | ポジネガ探偵ぷらこめ</title>
     <link rel="canonical" href="https://purakome.net/sentiment/">
     <meta name="description" content="web上で使えるリアルタイム感情分析ツール。気になるワードの評判・満足度を最新AIがまとめて調査。">
-    <meta property="og:type" content="article" />
-    <meta property="og:url" content="https://purakome.net/sentiment/" />
-    <meta property="og:site_name" content="感情分析ぷらこめ" />
-    <meta property="og:title" content="ツイッター感情分析ツール | ぷらこめ"/>
-    <meta property="og:description" content="web上で使えるリアルタイム感情分析ツール。気になるワードの評判・満足度を最新AIがまとめて調査。"/>
-    {% with filename="image/header_forblogger.webp" %}
-    <meta property="og:image" content="{% static filename %}"/>
-    {% endwith %}
-    <meta name="twitter:card" content="summary_large_image"/>
     <meta name="twitter:site" content="@LeiLingVei"/>
-
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="ツイッター感情分析・エゴサツール|ぷらこめ"/>
+    <meta name="twitter:description" content="web上で使えるリアルタイム感情分析ツール。気になるワードの評判・満足度を最新AIがまとめて調査。"/>
+    {% with filename="image/header_forblogger.webp" %}
+    <meta name="twitter:image" content="https://purakome.net/static/image/header_forblogger.webp"/>
+    {% endwith %}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/3.10.2/mdb.min.css" rel="stylesheet"/>
 
@@ -46,7 +41,7 @@ gtag('config', 'G-NGPST6PSGS');
   <div class="spinner-border text-info" role="status" id="loading">
     <span class="visually-hidden">調査中...</span>
   </div>
-  <span class="text-info nowloading">&nbsp;調査中..</span>
+  <span class="text-info nowloading">&nbsp;調査中です。しばらくお待ちください..</span>
 </div>
 
 <div id="hide_contents">
@@ -58,18 +53,19 @@ gtag('config', 'G-NGPST6PSGS');
     <a class="title" role="button" href="https://purakome.net">
       <img src="{% static 'image/siteicon_anime.webp' %}" height="90" width="230" alt="サイトアイコン">
     </a>
-    <h1 style="font-size:2.4rem; font-weight:bold;text-align:center;margin-top:2rem;">ツイッター感情分析ツール</h1>
+    <h1 style="font-size:2.4rem; font-weight:bold;text-align:center;margin-top:2rem;">Twitterオンライン感情分析ツール</h1>
     </div>
 
     <div class="row" style="margin-top:3rem;margin-bottom:1rem;">
 
-    <p style="font-size:1.5rem; text-align:center;margin-bottom:2rem;">【とてもポジティブ】,【ポジティブ】,【ネガティブ】,【とてもネガティブ】の4段階でツイートの感情をAIが分類,一覧表示します。<br>評判調査やブログの引用ツイート検索等にご活用ください。(～1週間前のツイートまで検索できます)</p>
+    <p style="font-size:1.5rem; text-align:center;margin-bottom:2rem;">気になる単語の【とてもポジティブ】,【ポジティブ】,【ネガティブ】,【とてもネガティブ】なツイートをAIが自動収集,一覧表示します。<br>評判調査やエゴサーチ,ブログの引用ツイート検索等にご活用ください。(～1週間前のツイートまで検索できます)</p>
+    <p style="background-color:#FF9999; fontswize:1.5rem;">いつもぷらこめをご利用いただきありがとうございます。TwitterAPIの無料利用が2023年2月9日をもって終了するとの公式の発表があり、ぷらこめでも該当の機能を利用しているため、詳細がわかるまで該当APIを利用しているサービスの機能を一旦停止させていただいております。<br>皆様にはご心配をおかけし大変申し訳ございませんが、次のご案内までお待ちいただけますと幸いです。<br>引き続きぷらこめをどうぞよろしくお願いいたします。</p>
     <form class="col-md-auto" style="margin:auto;" action="{% url 'sentiment_demo' %}" method="post">
     {% csrf_token %}
         <div class="input-group">
             <input type="search" required="required" style="height:40px;" placeholder="本文に含まれるキーワード入力" name="talk" id="form1" class="form-control" />
 
-            <button type="submit" class="btn btn-dark">
+            <button type="submit" class="btn btn-dark" disabled>
               検索
             </button>
         </div>
@@ -136,17 +132,36 @@ gtag('config', 'G-NGPST6PSGS');
     {% endif %}
 
     {% if total > 0 %}
-    <p style="margin-top:2rem;font-size:1.7rem; font-weight:bold;">{{total}}件見つかりました</p>
+    <p style="margin-top:2rem;font-size:1.7rem;">感情有りツイートが<span style="font-weight:bold;">{{total}}件</span>見つかりました</p>
+
     <div style="height:170px;text-align:left;">
       <canvas id="PieChart_demo"></canvas>
     </div>
+    <div style="margin:auto;max-width:350px;">
+    <table class="table table-sm" style="font-size:1.3rem;">
+      {% if p2data %}<tr><td><a href="#vp" style="color:black">とてもポジティブなツイート数</a></td><td style="color:blue;font-weight:bold;">{{p2data|length}}</td></tr>{% endif %}
+      {% if p1data %}<tr><td><a href="#p" style="color:black">ポジティブなツイート数</a></td><td style="color:deepskyblue;font-weight:bold;">{{p1data|length}}</td></tr>{% endif %}
+      {% if n1data %}<tr><td><a href="#n" style="color:black">ネガティブなツイート数</a></td><td style="color:darkorange;font-weight:bold;">{{n1data|length}}</td></tr>{% endif %}
+      {% if n2data %}<tr><td><a href="#vn" style="color:black">とてもネガティブなツイート数</a></td><td style="color:indianred;font-weight:bold;">{{n2data|length}}</td></tr>{% endif %}
+    </table>
+    </div>
+    {% if fname %}
+    <div style="margin:2rem;text-align:center;">
+      <p style="font-size:1.5rem;font-weight:bold;">画像要約</p>
+      {% with src_letters="data:image/png;base64,"|add:fname %}
+      <img src="{{src_letters}}" alt="{{query}}_wordcloud" />
+      {% endwith %}
+      <aside><p style="margin-top:1rem;">(出現数が多い単語ほど大きく表示されます)</p></aside>
+    </div>
+    {% endif %}
+
     {% elif total == 0 %}
     <p style="margin-top:2rem;font-size:1.7rem; font-weight:bold;">ポジティブ/ネガティブなツイートは見つかりませんでした。<br>キーワードを変えてお試しください。</p>
     {% endif %}
 
     {% if p2data %}
      <hr>
-            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+            <p id="vp" style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
               とてもポジティブなツイート:{{p2data|length}}件
             </p>
 
@@ -222,7 +237,7 @@ gtag('config', 'G-NGPST6PSGS');
 
     {% if p1data %}
      <hr>
-            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+            <p id="p" style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
               ポジティブなツイート:{{p1data|length}}件
             </p>
 
@@ -296,7 +311,7 @@ gtag('config', 'G-NGPST6PSGS');
 
     {% if n1data %}
     <hr>
-            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+            <p id="n" style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
               ネガティブなツイート:{{n1data|length}}件
             </p>
 
@@ -370,7 +385,7 @@ gtag('config', 'G-NGPST6PSGS');
 
     {% if n2data %}
     <hr>
-            <p style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
+            <p id="vn" style="font-size:1.7rem; font-weight:bold;text-align: left; font-weight:bold;">
               とてもネガティブなツイート:{{n2data|length}}件
             </p>
 
@@ -616,10 +631,10 @@ window.addEventListener("load", function() {
       responsive: true,
 
       legend:{
-        display: true,
+        display: false,
       },
       title:{
-        display:false,
+        display:true,
         fontSize:15,
         text: 'ポジティブ/ネガティブ割合',
       },

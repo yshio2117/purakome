@@ -5,3 +5,4 @@ __pycache__/
 /static/models/*
 /logs/*
 /sentiment/migrations/*
+/mecab/migrations/*

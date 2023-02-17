@@ -9,6 +9,7 @@ Disallow: /static/models/
 
 User-agent: Twitterbot
 Allow: /static/image/wordcloud/result/
+Allow: /static/image/header_forblogger.webp
 
 User-agent: blogmuraBot/2.0 (+https://blogmura.com)
 Allow: /static/image/wordcloud/result/

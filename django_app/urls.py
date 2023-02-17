@@ -44,7 +44,7 @@ urlpatterns = [
 
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
     # 手動の場合
-    path('sitemap_del.xml', TemplateView.as_view(template_name='sitemap_del.xml', content_type='application/xml')),
+    #path('sitemap_del.xml', TemplateView.as_view(template_name='sitemap_del.xml', content_type='application/xml')),
     #path('sitemap2.xml', sitemap, {'sitemaps': sitemaps2}, name='sitemap2'),
     path('ads.txt', TemplateView.as_view(template_name='ads.txt', content_type='text/plain')),
     path('feed/', LatestFeed()),
