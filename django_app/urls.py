@@ -37,6 +37,7 @@ urlpatterns = [
     path('adbum/', admin.site.urls),
 
     path('sentiment/anime/feed/', LatestFeed()),
+    path('mecab/',include('mecab.urls')),
 
     path('', include('sentiment.urls')),
 

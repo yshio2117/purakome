@@ -92,6 +92,7 @@ INSTALLED_APPS = [
     'django_boost',
     'django_social_share',
     'snowpenguin.django.recaptcha2',
+    'mecab',
 ]
 SITE_ID = 1 # サイトマップ
 
