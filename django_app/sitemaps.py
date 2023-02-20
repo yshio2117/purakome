@@ -158,6 +158,7 @@ class StaticViewSitemap(Sitemap):
             'aboutus',
             'quiz_index',
             'sentiment_demo',
+            'mecab:addword',
         ]
         
         return items
@@ -174,6 +175,13 @@ class StaticViewSitemap(Sitemap):
                                2,
                                1,
                                00,00,00).replace(tzinfo=JST())
+
+        elif obj == 'mecab:addword':
+            return datetime.datetime(2023,
+                               2,
+                               17,
+                               00,00,00).replace(tzinfo=JST())
+
 
     def location(self, obj):
         return reverse(obj)

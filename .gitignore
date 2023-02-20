@@ -3,6 +3,7 @@ __pycache__/
 /.spyproject
 /static/image/*
 /static/models/*
+/static/mecab/*
 /logs/*
 /sentiment/migrations/*
 /mecab/migrations/*

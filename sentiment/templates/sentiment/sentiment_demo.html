@@ -59,13 +59,13 @@ gtag('config', 'G-NGPST6PSGS');
     <div class="row" style="margin-top:3rem;margin-bottom:1rem;">
 
     <p style="font-size:1.5rem; text-align:center;margin-bottom:2rem;">気になる単語の【とてもポジティブ】,【ポジティブ】,【ネガティブ】,【とてもネガティブ】なツイートをAIが自動収集,一覧表示します。<br>評判調査やエゴサーチ,ブログの引用ツイート検索等にご活用ください。(～1週間前のツイートまで検索できます)</p>
-    <p style="background-color:#FF9999; fontswize:1.5rem;">いつもぷらこめをご利用いただきありがとうございます。TwitterAPIの無料利用が2023年2月9日をもって終了するとの公式の発表があり、ぷらこめでも該当の機能を利用しているため、詳細がわかるまで該当APIを利用しているサービスの機能を一旦停止させていただいております。<br>皆様にはご心配をおかけし大変申し訳ございませんが、次のご案内までお待ちいただけますと幸いです。<br>引き続きぷらこめをどうぞよろしくお願いいたします。</p>
+    <p style="background-color:#FF9999; fontswize:1.5rem;">いつもぷらこめをご利用いただきありがとうございます。TwitterAPIの無料利用が2023年2月9日をもって終了するとの公式の発表があり、ぷらこめでも該当の機能を利用しているため、詳細がわかるまで該当APIを利用しているサービスの機能を一部制限させていただいております。<br>皆様にはご心配をおかけし大変申し訳ございませんが、次のご案内までお待ちいただけますと幸いです。<br>引き続きぷらこめをどうぞよろしくお願いいたします。</p>
     <form class="col-md-auto" style="margin:auto;" action="{% url 'sentiment_demo' %}" method="post">
     {% csrf_token %}
         <div class="input-group">
             <input type="search" required="required" style="height:40px;" placeholder="本文に含まれるキーワード入力" name="talk" id="form1" class="form-control" />
 
-            <button type="submit" class="btn btn-dark" disabled>
+            <button type="submit" class="btn btn-dark">
               検索
             </button>
         </div>
