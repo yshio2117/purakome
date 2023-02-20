@@ -3,6 +3,12 @@ from .dictadd import dictadd
 import csv
 
 # Create your views here.
+
+def addwiki(request):
+    
+    return render(request,'mecab/addwiki.html')
+
+
 def addword(request):
     #print('mecab')
     if request.method == "GET":

@@ -9,6 +9,5 @@ urlpatterns = [
     
    # mecab関連
     path(r'gen-katsuyo/',views.addword,name='addword'),
-    #path(r'',views.toppage,name='toppage'),
-
+    path(r'addwiki/',views.addwiki,name='addwiki'),
     ]

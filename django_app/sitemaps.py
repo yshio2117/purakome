@@ -159,6 +159,7 @@ class StaticViewSitemap(Sitemap):
             'quiz_index',
             'sentiment_demo',
             'mecab:addword',
+            'mecab:addwiki',
         ]
         
         return items
@@ -181,6 +182,12 @@ class StaticViewSitemap(Sitemap):
                                2,
                                17,
                                00,00,00).replace(tzinfo=JST())
+        elif obj == 'mecab:addwiki':
+            return datetime.datetime(2023,
+                               2,
+                               20,
+                               00,00,00).replace(tzinfo=JST())
+
 
 
     def location(self, obj):

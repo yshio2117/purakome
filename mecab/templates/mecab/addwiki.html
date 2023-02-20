@@ -1,0 +1,1042 @@
+{% load static %}
+{% load filter %}
+{% load social_share %}
+<!DOCTYPE html>
+<html lang="ja">
+<head prefix="og:http://ogp.me/ns#">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NGPST6PSGS"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NGPST6PSGS');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
+    <title>最新wikipediaを反映したMeCabユーザー辞書を作る - NEologd拡張 | ぷらこめ</title>
+    <link rel="canonical" href="https://purakome.net/mecab/addwiki/">
+    <meta name="description" content="最新wikipediaを反映したMeCabユーザー辞書を作る。">
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:site" content="@LeiLingVei"/>
+    <meta name="twitter:domain" content="purakome.net"/>
+    <meta name="twitter:title" content="最新wikipediaを反映したMeCabユーザー辞書を作る - NEologd拡張 | ぷらこめ"/>
+    <meta name="twitter:description" content="最新wikipediaを反映したMeCabユーザー辞書を作る"/>
+    {% with filename="image/header_forblogger.webp" %}
+    <meta name="twitter:image" content="{% static filename %}"/>
+    {% endwith %}
+
+
+
+<!-- Font Awesome -->
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  rel="stylesheet"
+/>
+<!-- Google Fonts -->
+<link
+  href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
+  rel="stylesheet"
+/>
+<!-- MDB -->
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.1.0/mdb.min.css"
+  rel="stylesheet"
+/>
+    <!-- custam css -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+</head>
+
+
+<body>
+
+
+<div class="d-flex justify-content-center align-items-center vh-100 bg-white">
+  <div class="spinner-border text-info" role="status" id="loading">
+    <span class="visually-hidden"></span>
+  </div>
+  <span class="text-info nowloading"></span>
+</div>
+
+<div id="hide_contents"> <!-- spinner表示時に隠す -->
+
+
+<div class="container">
+
+    <div>
+        <a class="title" role="button" href="{% url 'index' %}">
+          <img src="{% static 'image/siteicon_anime.webp' %}" height="90" width="230" alt="サイトアイコン">
+        </a>
+        <h1 class="fs-1 fw-bold text-center mt-4">最新wikipediaを反映したMeCabユーザー辞書を作る - NEologd拡張</h1>
+    </div>
+    
+<div class="fs-4 mt-5 mb-5 mx-4">    
+<p>&emsp;<a href="https://github.com/neologd/mecab-ipadic-neologd/blob/master/README.ja.md" target="_blank">mecab-ipadic-NEologd</a>の単語更新が2020年あたりで止まっているようですので、それ以降に登場した単語が解析できません。</p>
+<p>例えば最近の人気アニメの”<strong>スパイファミリー</strong>”を解析しようとすると、</p>
+<p> </p>
+<hr>
+<p>スパイファミリー<br />スパイ  名詞,一般,*,*,*,*,スパイ,スパイ,スパイ<br />ファミリー      名詞,一般,*,*,*,*,ファミリー,ファミリー,ファミリー<br />EOS</p>
+<hr>
+<p> </p>
+<p>”スパイ”と”ファミリー”の２単語で解析されてしまいます。</p>
+<p> </p>
+<p>&emsp;neologdでははてなキーワードのダンプデータ等、様々なweb上の資源から辞書を作成していたようですが、せめて<strong>wikipediaに掲載されている固有名詞くらいは解析したい</strong>と思い、最新のwikipediaダンプデータ(2023年1月版)からユーザー辞書(システム辞書ではない)を作成したいと思います。</p>
+<p> </p>
+<h2 class="fw-bold mb-3">ダンプファイルのダウンロード</h2>
+<p>&emsp;まずは日本語wikiページの全タイトルが記載されたダンプデータを<a href="https://dumps.wikimedia.org/jawiki/" target="_blank">こちらから</a>ダウンロードしてきます（今回は jawiki-20230120-all-titles-in-ns0.gz というファイルになります)。</p>
+<p> </p>
+<p>ファイル内の単語数を見てみると<b>2202077個</b>あるようです。膨大な数ですが、よく見てみると<b>'1917'</b>等の単なる数字だったり<b>'2005年のスポーツ'</b>など固有名詞とは言えないエントリも多く含まれていますので、不要なものは除外したいです。</p>
+<p>そこで前処理としてダンプファイルのフォーマットを以下の３０個のルールで整えていきます。</p>
+<p> </p>
+
+<h2 class="fw-bold mb-3">前処理のルール</h2>
+<div class="fw-bold table-responsive">
+<table class="table fs-5">
+<tbody>
+<tr>
+<td>1</td>
+<td>前処理パターン</td>
+<td>アンダーバー(_)</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>半角スペースに変換</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>2</td>
+<td>前処理パターン</td>
+<td>全角英数字・記号</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>neologdn辞書用の正規化処理の実施(neologdnモジュール)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>3</td>
+<td>前処理パターン</td>
+<td>単語末尾_() or 単語末尾()</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除去するべき場合としないほうが良い場合の判定難しため、末尾が括弧閉じで終わる場合のみ除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>LAST_GIGS_(Video)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>$10_(曲)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>&amp;_(シングル)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>/e/_(オペレーティングシステム)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>0.03秒_(お笑いトリオ)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>Creepy_Nuts(R-指定&amp;DJ松永)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>LEVEL3(アナログ盤)</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>4</td>
+<td>前処理パターン</td>
+<td>引用符(",')が含まれる</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>単語全体が引用符(",')で含まれる場合のみ、引用符を除外して追加する</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>”Hello,_world.”</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>”Show_me_the_way”</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>”THE_RAIL_KITCHEN_CHIKUGO”</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>5</td>
+<td>前処理パターン</td>
+<td>引用符'が２つ以上連続するケース</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>2つ以上連続するシングルクオーテーションはダブルクオーテーション１つに変換</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>''ブレイブリーデフォルト_フェアリーズエフェクト'''</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>'N''-ビニル-2-ピロリドン</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>'O''記法</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>'j''-不変量</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>11'09''01/セプテンバー11</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>3''-デアミノ-3''-ニコチアナミンレダクターゼ</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>6</td>
+<td>前処理パターン</td>
+<td>単語1文字</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>全除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>＆</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>％</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>7</td>
+<td>前処理パターン</td>
+<td>単語16文字以上</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>全除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>8</td>
+<td>前処理パターン</td>
+<td>,(カンマ)が含まれる</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>全除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>Yes,mama_ok?</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>Yes,we_are.</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>Yesterday,_Yes_a_day</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>You're_a_Sap,_Mr._Jap</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>9</td>
+<td>前処理パターン</td>
+<td>～の・・</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>単語内に'の'が含まれる単語は全除外（文頭・文末が'の'の場合は助詞の'の'の可能性は低いので例外で登録. ex. 'のの子突撃','ののいちカレード',）</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>チュニジアの旗</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>ガンビア銀行の一覧</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>ナウルと日本の関係</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>10</td>
+<td>前処理パターン</td>
+<td>～及び(および)・・・</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>外交部及び国際事務学院</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>2010年憲法改革及び統治法</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>マケドニア共和国空軍及び防空軍</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>基準割引率および基準貸付利率</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td>11</td>
+<td>前処理パターン</td>
+<td>～または・・・</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>賢者の石、または魔法の島</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>やとみまたはち</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>および/または</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>12</td>
+<td>前処理パターン</td>
+<td>動詞,形容詞</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>下記正規表現に該当する動詞＋”^.+い”で終わる形容詞すべて除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>攣る</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>嚙む</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>13</td>
+<td>前処理パターン</td>
+<td>ひらがな2文字の単語</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>14</td>
+<td>前処理パターン</td>
+<td>会社名</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>現状除外していない</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>(有)櫻井工房</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>(株)かっこかぶ</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>(有)チェリーベル</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>(株)あまつか笑事</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>..</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>15</td>
+<td>前処理パターン</td>
+<td>索引～</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>一部例外除いて除外</td>
+</tr>
+<tr>
+<td> </td>
+<td>除外例</td>
+<td>
+<p>索引ひ</p>
+</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>索引Z</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>索引1</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>索引う</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>索引K</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>...</td>
+</tr>
+<tr>
+<td> </td>
+<td>例外</td>
+<td>索引記号</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>索引順編成ファイル</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>索引付き順次アクセス方式</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>16</td>
+<td>前処理パターン</td>
+<td>引用符すべて</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>引用符はすべてシングルクオーテーションに統一</td>
+</tr>
+<tr>
+<td> </td>
+<td>特殊引用符例</td>
+<td>“SINGLES”</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>“SMILING”_〜THE_BEST_OF_NORIYUKI_MAKIHARA〜</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>“SUMMER_of_'98”pure_soul_in_STADIUM</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>“Start_Walking_The_World”TOUR</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>“The_Book”jojo's_bizarre_adventure_4th_another_day</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>“UTAHIME”_AKINA_NAKAMORI_PARCO_THEATER_LIVE</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td>“X”plosion_GUNDAM_SEED</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>17</td>
+<td>前処理パターン</td>
+<td>ダンプファイル内で文字の一部が重複している単語</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>重複があるとmecabで分割されてしまうため,すべて除外→ユーザー辞書作成後に再度追加予定</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>18</td>
+<td>前処理パターン</td>
+<td>アルファべット or '!', '?' のみが連続する単語</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>19</td>
+<td>前処理パターン</td>
+<td>ハッシュタグ(#ではじまる)</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>#5,1288,1288,7911,名詞,固有名詞,一般,*,*,*,#5<br />#3,1288,1288,7911,名詞,固有名詞,一般,*,*,*,#3<br />#4,1288,1288,7911,名詞,固有名詞,一般,*,*,*,#4<br />#17,1288,1288,7437,名詞,固有名詞,一般,*,*,*,#17<br />#2i2,1288,1288,6815,名詞,固有名詞,一般,*,*,*,#2i2<br />#302,1288,1288,6815,名詞,固有名詞,一般,*,*,*,#302<br />#SOAR,1288,1288,5957,名詞,固有名詞,一般,*,*,*,#SOAR<br />#ハピイレ,1288,1288,5957,名詞,固有名詞,一般,*,*,*,#ハピイレ<br />...</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>20</td>
+<td>前処理パターン</td>
+<td>?が先頭の単語</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>"?日,1288,1288,7911,名詞,固有名詞,一般,*,*,*,?日<br />?月,1288,1288,7911,名詞,固有名詞,一般,*,*,*,?月<br />?:,1288,1288,7911,名詞,固有名詞,一般,*,*,*,?:<br />?年,1288,1288,7911,名詞,固有名詞,一般,*,*,*,?年<br />??日,1288,1288,7437,名詞,固有名詞,一般,*,*,*,??日<br />...</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>21</td>
+<td>前処理パターン</td>
+<td>句読点連続</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>、。</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>22</td>
+<td>前処理パターン</td>
+<td>文末点の連続</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>・・・,1288,1288,-648,名詞,固有名詞,一般,*,*,*,・・・<br />・・・・・・・・・,1288,1288,-8974,名詞,固有名詞,一般,*,*,*,・・・・・・・・・<br />...,1288,1288,7437,名詞,固有名詞,一般,*,*,*,...<br />....,1288,1288,6815,名詞,固有名詞,一般,*,*,*,....</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>23</td>
+<td>前処理パターン</td>
+<td>ひらがな以外(漢字,カナ,アルファベット,数字)＋さん/ちゃん</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>['京子ちゃん'] <br />['阿部ちゃん']</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>24</td>
+<td>前処理パターン</td>
+<td>アンダーバー連続</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>__</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>25</td>
+<td>前処理パターン</td>
+<td>数字連続+感嘆符</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>9!,1288,1288,7911,名詞,固有名詞,一般,*,*,*,9! <br />6!,1288,1288,7911,名詞,固有名詞,一般,*,*,*,6! <br />7!,1288,1288,7911,名詞,固有名詞,一般,*,*,*,7! <br />4!,1288,1288,7911,名詞,固有名詞,一般,*,*,*,4! <br />3!,1288,1288,7911,名詞,固有名詞,一般,*,*,*,3! <br />5!,1288,1288,7911,名詞,固有名詞,一般,*,*,*,5! <br />5656!,1288,1288,5957,名詞,固有名詞,一般,*,*,*,5656! <br />1518!,1288,1288,5957,名詞,固有名詞,一般,*,*,*,1518!</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>26</td>
+<td>前処理パターン</td>
+<td>マイナス+数字連続</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>-8,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-8<br />-9,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-9<br />-0,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-0<br />-7,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-7<br />-6,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-6<br />-5,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-5<br />...</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>27</td>
+<td>前処理パターン</td>
+<td>コロン＋数字</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>18:0,1288,1288,6815,名詞,固有名詞,一般,*,*,*,18:0<br />22:5,1288,1288,6815,名詞,固有名詞,一般,*,*,*,22:5<br />20:5,1288,1288,6815,名詞,固有名詞,一般,*,*,*,20:5<br />8:46,1288,1288,6815,名詞,固有名詞,一般,*,*,*,8:46<br />18:1,1288,1288,6815,名詞,固有名詞,一般,*,*,*,18:1<br />22:6,1288,1288,6815,名詞,固有名詞,一般,*,*,*,22:6<br />...</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>28</td>
+<td>前処理パターン</td>
+<td>スラッシュ＋数字</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>1/,1288,1288,7911,名詞,固有名詞,一般,*,*,*,1/<br />/0,1288,1288,7911,名詞,固有名詞,一般,*,*,*,/0<br />/05,1288,1288,7437,名詞,固有名詞,一般,*,*,*,/05<br />2/4,1288,1288,7437,名詞,固有名詞,一般,*,*,*,2/4<br />1/5,1288,1288,7437,名詞,固有名詞,一般,*,*,*,1/5<br />1/4,1288,1288,7437,名詞,固有名詞,一般,*,*,*,1/4<br />...</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>29</td>
+<td>前処理パターン</td>
+<td>ハイフン連続</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>--,1288,1288,7911,名詞,固有名詞,一般,*,*,*,-- <br />---,1288,1288,7437,名詞,固有名詞,一般,*,*,*,---</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+<tr>
+<td> </td>
+<td> </td>
+<td> </td>
+</tr>
+<tr>
+<td>30</td>
+<td>前処理パターン</td>
+<td>アルファベット１文字＋'.'</td>
+</tr>
+<tr>
+<td> </td>
+<td>例</td>
+<td>D.,1288,1288,7911,名詞,固有名詞,一般,*,*,*,D. <br />E.,1288,1288,7911,名詞,固有名詞,一般,*,*,*,E. <br />L.,1288,1288,7911,名詞,固有名詞,一般,*,*,*,L. <br />V.,1288,1288,7911,名詞,固有名詞,一般,*,*,*,V.</td>
+</tr>
+<tr>
+<td> </td>
+<td>対応</td>
+<td>除外</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p> </p>
+<p> </p>
+<h2 class="fw-bold mb-3">コスト設定の方法</h2>
+<p> </p>
+<p>&emsp;次に単語の生起コスト設定の方法ですが、<strong>新規で追加した単語が他の単語で分割されない</strong>ように設定します。<br />例えば "スパイファミリー"(固有名詞)と登録したのに既存エントリの"スパイ"(名詞) と "ファミリー"(名詞)に分割されるのを防ぎます。そのために<strong>既存辞書の最短のコスト値から-1以下に設定</strong>します。<br />ここでコストを下げすぎると既存辞書にその単語を含む単語がある場合に、既存の単語が選ばれなくなる可能性が出てきます。例としては”<strong>スパイファミリー２</strong>"という既存単語があった場合に、新規で"スパイファミリー”をコスト最強-9999等で設定してしまうと"スパイファミリー２"はどのような文脈でも解析結果に出現しなくなってしまいます。</p>
+<p>では-1に設定すれば良いのでは？と考えるのですが、既存単語(固有名詞)のコスト値とあまりにもかけ離れた値を設定してしまう可能性(固有名詞としてはコスト値が高すぎて、文脈の中では正しく解析されない可能性)もありますので、あらかじめ全既存単語の文字数ごとにコスト値の平均値を調べておき、その<strong>"平均値"と先ほどの"最短のコスト値-1"の低い方の値</strong>を最適なコスト値として設定することにします。</p>
+<p> </p>
+<h2 class="fw-bold mb-3">コスト設定上の注意点</h2>
+<p> </p>
+<p>&emsp;登録する単語の前処理を行い、設定する生起コスト値も決まったわけですが、ここで一つ問題が出てきます。</p>
+<p>もしダンプファイル内に文字が重複する単語があった場合どうするか？ということです。</p>
+<p>例えばダンプファイル内に<strong>”スパイファミリー”</strong>と<strong>”スパイファミリー2”</strong>の2単語があった場合、これらの単語のコスト値を求める際に、お互いの単語のコスト値は考慮されません。つまり文字数の多い"スパイファミリー2"のコスト値が文字数の少ない"スパイファミリー”より高くなりすぎて、"スパイファミリー2"という文章を解析する際に"スパイファミリー"と"2"の２単語に分割されてしまう可能性が出てきます。</p>
+<p>そこでダンプファイル内の単語すべてを一度にコスト設定するのではなく、文字が一部重複する単語群を保留しておいて、文字数が少ない単語群から複数回に分けてコストを設定していくというプロセスを取ることにします。</p>
+<p> </p>
+<h2 class="fw-bold mb-3">ユーザー辞書を作成する</h2>
+<p> </p>
+<p>&emsp;前置きが長くなりましたが、上記の前処理規則・コスト設定手順を適用して作成されたユーザー辞書が<a href="{% static 'mecab/wiki-20230120.dic' %}" download="wiki-20230120.dic">こちら</a>になります。</p>
+<p>辞書の元になったcsvファイルの単語総数は<b>778031個</b>です。この数は上でご紹介した３０個の前処理規則を通し、既存のneologd辞書に載っている単語は除いた数になります。 </p>
+<p>ではこのユーザー辞書を使い<strong>”スパイファミリー”</strong>を解析してみましょう。</p>
+<p> </p>
+<hr>
+<p>スパイファミリー    名詞,固有名詞,一般,*,*,*,スパイファミリー<br />EOS</p>
+<hr>
+<p> </p>
+<p>新規で追加された固有名詞の<strong>”スパイファミリー”</strong>１語で解析できました。</p>
+<p> </p>
+<h2 class="fw-bold mb-3">効果測定</h2>
+<p> </p>
+<p>&emsp;では<strong>”スパイファミリー”</strong>以外の新規単語も正しく解析できるのでしょうか？またユーザー辞書を加えたことによる、既存のシステム辞書への悪影響はないのでしょうか？そこで以下４つのテストを実施してみます。</p>
+<p> </p>
+
+<p>１．解析する文章が新規追加した単語のみの場合、他の単語に分割されずに解析されるか？</p>
+<p>２．解析する文章が新規追加した単語を含む文章の場合でも、その単語は新規の固有名詞として解析されるか？</p>
+<p>３．解析する文章がダンプファイルに含まれていない既知の単語のみの場合、(新規追加した単語に)分割されずに解析されるか？</p>
+<p>４．解析する文章がダンプファイルに含まれていない既知の単語を含む文章の場合でも、その単語は既知の単語のまま解析されるか？</p>
+<p> </p>
+<p>詳細なテスト結果はこちら</p>
+<p> </p>
+<p>テスト１と２の結果から新規追加した単語すべてが(様々な文脈において)正しく解析でき、３と４の結果から既存辞書への大きな悪影響もないことがわかりました。</p>
+<p> </p>
+<hr>
+<br>
+<h2 class="fw-bold mb-3">まとめ</h2>
+<p>&emsp;これで最新wikipediaに掲載されている単語を反映したMeCabユーザー辞書を作ることができました。<br>今回は全単語を固有名詞・一般として(無理やり)一括登録しましたが、もう少し工夫すれば品詞の細かい分類(人名等)もできそうですね。また前処理もかなりざっくりした規則なので、実際はもう少し慎重に規則を考える必要がありそうです。<br><br>最後に、今回作成したユーザー辞書を使った解析例として、最新の人気アニメ<a href="https://purakome.net/sentiment/anime/jojo-stone-ocean/">ジョジョの奇妙な冒険 ストーンオーシャンの評判分析</a>をご紹介させていただき、記事の終わりとさせていただきます。最後までお読みいただきありがとうございました。</p>
+<br>
+<hr>
+<br>
+<p>こちらの記事もどうぞ：<a href="https://purakome.net/mecab/gen-katsuyo/">動詞や形容詞をユーザー辞書に登録する</a></p>
+<br>
+</div>
+
+
+<!-- container -->
+</div>
+
+
+
+
+
+<!--上部へ戻るボタン-->
+<div id="page_top">
+  <a href="#"></a>
+</div>
+
+<!--Footer-->
+<footer class="py-5 bg-black">
+    <div class="container">
+        <p class="m-0 text-center text-white small">Copyright &copy; ぷらこめ 2022</p>
+        <hr>
+        <a href="{% url 'contact' %}">
+          <p class="m-0 text-center text-white">お問い合わせ</p>
+        </a>
+        <hr>
+        <a href="{% url 'sitepolicy' %}">
+          <p class="m-0 text-center text-white">サイトポリシー</p>
+        </a>
+        <hr>
+        <a href="{% url 'aboutus' %}">
+          <p class="m-0 text-center text-white">About us</p>
+        </a>
+        <br>
+        <br>
+
+    </div>
+
+</footer>
+
+<!-- hide_contents -->
+</div>
+
+<!-- MDB -->
+<script
+  type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/6.1.0/mdb.min.js"
+></script>
+
+<script>
+//ボタン複数回クリック防止
+
+var loading = document.getElementById('loading');
+var contents = document.getElementById('hide_contents');
+
+// spinnerが表示されていたら非表示(キャッシュ読込時も動作)
+window.addEventListener("pageshow", () => {
+  if( loading.parentNode.classList.contains('vh-100') == true ){
+     console.log("readed!");
+     loading.classList.add('d-none');
+     loading.parentNode.classList.replace('vh-100', 'd-none');
+     contents.classList.remove('d-none');
+
+  }
+});
+
+
+
+window.addEventListener("beforeunload", () => {
+
+    console.log("moving..");
+
+      loading.classList.remove('d-none');
+      loading.parentNode.classList.replace('d-none', 'vh-100');
+      contents.classList.add('d-none');
+
+});
+
+</script>
+
+</body>
+</html>
+
