@@ -12,6 +12,9 @@ class Blog(models.Model):
     created_at = models.DateTimeField(verbose_name='作成日時',auto_now_add=True)
     update_at = models.DateTimeField(verbose_name='更新日時',auto_now=True)
 
+    SELECTION = ((0,'その他'),(1,'Tech'),(2,'OpEd'))
+    category = models.PositiveSmallIntegerField(verbose_name='カテゴリー',choices=SELECTION,default=0)
+
     
     class Meta:
         verbose_name_plural = 'Blog'
