@@ -38,7 +38,7 @@ urlpatterns = [
 
     path('sentiment/anime/feed/', LatestFeed()),
     path('mecab/',include('mecab.urls')),
-
+    path('blog/',include('blog.urls')),
     path('', include('sentiment.urls')),
 
     path('sitemap3.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap3'),

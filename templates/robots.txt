@@ -3,6 +3,7 @@ Disallow: /
 
 User-agent: *
 Disallow: /static/image/
+DIsallow: /media/
 Disallow: /sentiment/anime/*/*/docs
 Disallow: /sentiment/johnnys/*/*/docs
 Disallow: /static/models/

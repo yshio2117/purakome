@@ -93,6 +93,7 @@ INSTALLED_APPS = [
     'django_social_share',
     'snowpenguin.django.recaptcha2',
     'mecab',
+    'blog',
 ]
 SITE_ID = 1 # サイトマップ
 
@@ -115,7 +116,7 @@ ROOT_URLCONF = 'django_app.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'templates')], # 一番最初にテンプレートを探す場所
+        'DIRS': [os.path.join(BASE_DIR,'templates'),os.path.join(BASE_DIR,'templates/blog'),], # 一番最初にテンプレートを探す場所
         'APP_DIRS': True, # Trueとしていた場合は、DIRSパスの次にアプリケーションディレクトリ内のtemplatesが探索される
         'OPTIONS': {
             'context_processors': [
@@ -188,6 +189,7 @@ STATICFILES_DIRS = ( # collectstaticがファイルを探す場所 & localであ
     )
 
 STATIC_URL = '/static/' # {% static %}で読まれる場所. 192.168.1.5:8000/static/
+MEDIA_URL = '/media/'
 STATIC_ROOT = '/usr/share/nginx/html/static'
 MEDIA_ROOT = '/usr/share/nginx/html/media'
 

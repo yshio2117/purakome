@@ -1,0 +1,164 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, user-scalable=yes">
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-NGPST6PSGS"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-NGPST6PSGS');
+    </script>
+    <title>{{blog.title}}　| ぷらこめブログ</title>
+    <link rel="canonical" href="https://purakome.net/blog/tech/{{blog.id}}/">
+    <meta property="og:url" content=""/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:site" content="@LeiLingVei"/>
+    <meta name="twitter:domain" content="purakome.net"/>
+    <meta name="twitter:title" content="{{blog.title}}| ぷらこめブログ"/>
+    <meta name="twitter:description" content=""/>
+    {% with filename="image/header_forblogger.webp" %}
+    <meta name="twitter:image" content="{% static filename %}"/>
+    {% endwith %}
+
+     <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet"/>
+
+        <!-- Core theme CSS (includes Bootstrap)-->
+    <link href="{% static 'css/blog_style.css' %}" rel="stylesheet" />
+</head>
+
+
+<body>
+
+    <!-- Responsive navbar-->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#!">ぷらこめブログ</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Top</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#!">About</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#!">Contact</a></li>
+                    <li class="nav-item"><a class="nav-link" href="https://purakome.net/sentiment/anime/">アニメのぷらこめ</a></li>
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- Page content-->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-lg-8" style="word-break: break-all; line-break: anywhere;">
+                <!-- Post content-->
+                <article>
+                    <!-- Post header-->
+                    <header class="mb-4">
+                        <!-- Post title-->
+                        <h1 class="fw-bolder mb-1">{{blog.title}}</h1>
+                        <!-- Post meta content-->
+                        <div class="text-muted fst-italic mb-2">投稿日:{{blog.created_at}}</div>
+                        <!-- Post categories-->
+                        {% for tag in title_tag %}
+                        <a class="badge bg-secondary text-decoration-none link-light" href="#!">{{tag}}</a>
+                        {% endfor %}
+                    </header>
+                    <!-- Preview image figure-->
+                    {% with filename="https://purakome.net"|add:blog.preview_image.url %}
+                    <figure class="mb-4"><img class="lazyload img-fluid rounded" data-src="{{filename}}" alt="preview image" max-with="900"/></figure>
+                    {% endwith %}
+                    <!-- Post content-->
+                    <section class="my-5" style="font-size:1.3rem;">
+                      {{blog.content | safe}}
+                    </section>
+                </article>
+
+            </div>
+            <!-- Side widgets-->
+            <div class="col-lg-4">
+                <!-- Search widget-->
+                <div class="card mb-4">
+                    <div class="card-header">Search</div>
+                    <div class="card-body">
+                        <div class="input-group">
+                            <input class="form-control" type="text" placeholder="Enter search term..." aria-label="Enter search term..." aria-describedby="button-search" />
+                            <button class="btn btn-primary" id="button-search" type="button">検索</button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Categories widget-->
+                <div class="card mb-4">
+                    <div class="card-header">Categories</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <ul class="list-unstyled mb-0">
+                                    <li><a href="#!">IT/技術</a></li>
+                                    <li><a href="#!">アニメ分析</a></li>
+                                </ul>
+                            </div>
+                            <!--
+                            <div class="col-sm-6">
+                                <ul class="list-unstyled mb-0">
+                                    <li><a href="#!">JavaScript</a></li>
+                                    <li><a href="#!">CSS</a></li>
+                                    <li><a href="#!">Tutorials</a></li>
+                                </ul>
+                            </div>
+                            -->
+                        </div>
+                    </div>
+                </div>
+                <!-- Side widget-->
+                <div class="card mb-4">
+                    <div class="card-header">最近の投稿</div>
+                    <!--<div class="card-body">You can put anything you want inside of these side widgets. They are easy to use, and feature the Bootstrap 5 card component!</div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+<!--上部へ戻るボタン-->
+<div id="page_top">
+  <a href="#"></a>
+</div>
+    
+<!--Footer-->
+<footer class="py-5 bg-black">
+    <div class="container">
+        <p class="m-0 text-center text-white small">Copyright &copy; プラコメ 2022</p>
+        <hr>
+        <a href="{% url 'contact' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">お問い合わせ</p>
+        </a>
+        <hr>
+        <a href="{% url 'sitepolicy' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">サイトポリシー</p>
+        </a>
+        <hr>
+        <a href="{% url 'aboutus' %}" style="text-decoration:none; color:black;">
+          <p class="m-0 text-center text-white">About us</p>
+        </a>
+        <br>
+        <br>
+
+    </div>
+
+
+</footer>
+
+    <!-- Bootstrap core JS-->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Core theme JS-->
+    <script src="js/blog_scripts.js"></script>
+
+   <!-- lazy load -->
+<script src="https://cdn.jsdelivr.net/npm/lazyload@2.0.0-rc.2/lazyload.min.js"></script>
+<script>lazyload();</script>
+
+</body>
+</html>

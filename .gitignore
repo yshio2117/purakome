@@ -4,6 +4,8 @@ __pycache__/
 /static/image/*
 /static/models/*
 /static/mecab/*
+/media/*
 /logs/*
 /sentiment/migrations/*
 /mecab/migrations/*
+/blog/migrations/*

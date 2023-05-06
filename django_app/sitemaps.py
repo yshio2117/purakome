@@ -126,9 +126,9 @@ class AnimeSitemap(Sitemap):
                                14,
                                00,00,00).replace(tzinfo=JST())
         elif obj in purakome_top:
-            return datetime.datetime(2022,
-                               12,
-                               30,
+            return datetime.datetime(2023,
+                               2,
+                               20,
                                00,00,00).replace(tzinfo=JST())
         
         elif obj in spring_animes:
