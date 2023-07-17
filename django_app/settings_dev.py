@@ -11,18 +11,12 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 from .settings_common import *
-import os
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['purakome.net',os.environ.get('ALLOWED_HOSTS')]
-
-RECAPTCHA_PRIVATE_KEY = os.environ.get('RECAPTCHA_PRIVATE_KEY')
-RECAPTCHA_PUBLIC_KEY = os.environ.get('RECAPTCHA_PUBLIC_KEY')
-
-
+ALLOWED_HOSTS = ['*']
 
 
 MIDDLEWARE = [
@@ -34,11 +28,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'maintenance_mode.middleware.MaintenanceModeMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware', # Deubg tool bar
 ]
 
-
-STATIC_ROOT = '/usr/share/nginx/html/static'
-MEDIA_ROOT = '/usr/share/nginx/html/media'
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
 LOGGING = {
     'version': 1, # 1固定
@@ -47,31 +41,26 @@ LOGGING = {
     'loggers': {
         # Djangoが利用するロガー
         'django': {
-            'handlers': ['file'],
-            'level': 'ERROR',
+            'handlers': ['console'],
+            'level': 'INFO',
         },
         # sentimentが利用するロガー
         'sentiment': {
-            'handlers': ['file'],
-            'level': 'ERROR',
+            'handlers': ['console'],
+            'level': 'DEBUG',
         },
     },
     # ハンドラの設定
     'handlers': {
-        'file': {
-            'level': 'ERROR',#高速化のためDEBUGからERRORに変更20221127
-            'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename':os.path.join(BASE_DIR,'logs/django.log'),
-            'formatter': 'prod',
-            'when':'D', # ログローテーション(新しいファイルへの切り替え)間隔の単位(D=日)
-            'interval':1, # ログローテーション間隔(1日)
-            'backupCount':7, # 保存しておくフログファイル数
-                    
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'dev'
         },
     },
     # フォーマッタの設定
     'formatters': {
-        'prod': {
+        'dev': {
             'format': '\t'.join([
                 '%(asctime)s',
                 '[%(levelname)s]',

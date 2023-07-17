@@ -77,8 +77,8 @@ class Bunrui:
     save_directory = os.environ.get('BERT_MODELS')
     #save_directory = r'static/models/hugface/bert_models/'
 
-    BT_tokenizer = AutoTokenizer.from_pretrained(save_directory)
-    BT_model = AutoModelForSequenceClassification.from_pretrained(save_directory)
+    BT_tokenizer = AutoTokenizer.from_pretrained(save_directory,use_auth_token=True)
+    BT_model = AutoModelForSequenceClassification.from_pretrained(save_directory,use_auth_token=True)
     BT_classifier = pipeline(task="sentiment-analysis",model=BT_model,tokenizer=BT_tokenizer)
 
 
