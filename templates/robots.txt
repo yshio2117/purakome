@@ -19,4 +19,4 @@ Allow: /static/image/wordcloud/result/
 User-agent: BlogRanking RSS Checker(http://blog.with2.net/)
 Allow: /static/image/wordcloud/result/
 
-
+Sitemap: https://purakome.net/sitemap3.xml

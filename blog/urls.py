@@ -12,4 +12,5 @@ urlpatterns = [
     #path(r'tech/',views.IndexView.as_view(),name='tech_index'),
 #    path(r'anime/',views.IndexView.as_view(),name='anime_index'),
     path(r'tech/<int:blog_id>/',views.tech_detail,name='tech_detail'),
+    path(r'anime/<int:blog_id>/',views.anime_detail,name='anime_detail'),
     ]
