@@ -31,8 +31,6 @@ MIDDLEWARE = [
     'debug_toolbar.middleware.DebugToolbarMiddleware', # Deubg tool bar
 ]
 
-STATIC_URL = '/static/'
-MEDIA_URL = '/media/'
 
 LOGGING = {
     'version': 1, # 1固定

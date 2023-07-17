@@ -172,5 +172,6 @@ STATICFILES_DIRS = ( # collectstaticがファイルを探す場所 & localであ
     os.path.join(BASE_DIR,'static'),
     )
 
-
+STATIC_URL = '/static/'
+MEDIA_URL = '/media/'
 
