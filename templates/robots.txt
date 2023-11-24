@@ -1,6 +1,9 @@
 User-agent: Googlebot-Image
 Disallow: /
 
+User-agent: amazon-kendra
+Disallow: /
+
 User-agent: *
 Disallow: /static/image/
 DIsallow: /media/
