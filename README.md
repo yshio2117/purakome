@@ -61,6 +61,17 @@ This application consists of two main components: a **Data Pipeline (Batch Proce
 <br><br>
 
 
+## 🧪 Testing Strategy
+
+I have implemented a testing strategy covering different layers of the application:
+
+*   **Unit / Smoke Testing (Implemented):**
+    *   Built with **Django's standard `unittest` framework**.
+    *   Automatically verifies HTTP response status (200 OK) and URL routing for all major pages to ensure basic availability.
+*   **E2E Automation (In Progress):**
+    *   Currently developing browser-based scenarios using **Selenium & Python** to test user flows (Search -> Analysis -> Ranking).
+<br>
+
 ## 🚀 Setup & Installation (Local)
 ```bash
 # Clone the repository
