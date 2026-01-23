@@ -54,7 +54,10 @@ This application consists of two main components: a **Data Pipeline (Batch Proce
     *   Text data is tokenized by MeCab and classified by the ML model.
     *   Processed data is stored in **PostgreSQL**.
 2.  **Web Application (Django):** 
-    *   The Django frontend queries the database to display pre-analyzed sentiment trends to users.  
+    *   The Django frontend queries the database to display pre-analyzed sentiment trends to users.
+3.  **NLP Analysis:** The Python script tokenizes the text (MeCab) and predicts sentiment.
+4.  **Storage:** Results are saved to the PostgreSQL database.
+5.  **Response:** The frontend renders the processed data into **intuitive visualizations** (Charts, Word Clouds) and **Leaderboards** for easy interpretation.
 <br><br>
 
 
