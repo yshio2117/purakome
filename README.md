@@ -1,6 +1,9 @@
 # Anime Sentiment Analyzer 🇯🇵📊
 *(Japanese Anime Review Sentiment Analysis Web App)*  
 
+[![Demo App](https://img.shields.io/badge/Demo_App-Click_Here-brightgreen?style=for-the-badge)](https://purakome.net/sentiment/anime/jojo-stone-ocean/)
+
+
 
 ## 📖 Project Overview
 This web application analyzes viewer sentiment towards Japanese anime titles by processing real-time review data.
