@@ -12,7 +12,7 @@ It collects tweets using the **Twitter API**, classifies them into 5 sentiment l
 I developed this project to demonstrate my skills in **Full-stack Development (Django)**, **Data Engineering**, and **Natural Language Processing (NLP)**.
 
 
-> 🚧 **Current Status:** I am currently implementing an End-to-End test automation framework using **Playwright & Python** to ensure quality and robustness.  
+> 🚧 **Current Status:** I am currently implementing an End-to-End test automation framework using **Selenium & Python** to ensure quality and robustness.  
 
 <br>
 
